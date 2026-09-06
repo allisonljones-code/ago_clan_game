@@ -3,165 +3,90 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
-<meta name="theme-color" content="#1f2f27">
+<meta name="theme-color" content="#15231c">
 <title>Clan Survival</title>
 <style>
-  :root{
-    --ink:#f8f4e8;
-    --ui:#1f2f27;
-    --ui2:#31443a;
-    --paper:#f6efdf;
-    --gold:#d4b063;
-    --accent:#93b28b;
-  }
-  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-  html,body{
-    margin:0;padding:0;background:#15231c;color:var(--ink);
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-    overflow:hidden;height:100%;
-  }
-  body{touch-action:none}
-  #gameWrap{
-    position:relative;width:100vw;height:100vh;overflow:hidden;background:#24382d;
-  }
-  canvas{
-    display:block;width:100%;height:100%;
-    background:#2f4a3b;
-  }
+:root{
+  --ink:#f8f4e8;--ui:#1f2f27;--paper:#f6efdf;--gold:#d4b063;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overflow:hidden;background:#15231c;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink)}
+body{touch-action:none}
+#gameWrap{position:relative;width:100vw;height:100vh;overflow:hidden;background:#24382d}
+canvas{display:block;width:100%;height:100%;background:#2f4a3b}
 
-  .hud{
-    position:absolute;left:12px;right:12px;top:calc(12px + env(safe-area-inset-top));
-    display:flex;justify-content:space-between;gap:10px;pointer-events:none;
-  }
-  .hudCard{
-    background:rgba(20,31,25,.82);backdrop-filter:blur(8px);
-    border:1px solid rgba(255,255,255,.12);
-    border-radius:16px;padding:10px 12px;box-shadow:0 8px 18px rgba(0,0,0,.18);
-  }
-  #objective{max-width:68%;font-size:14px;line-height:1.25}
-  #objective b{display:block;color:#f3d986;font-size:13px;margin-bottom:2px}
-  #stats{font-size:13px;text-align:right;min-width:110px}
-  #stats strong{font-size:17px;color:#fff}
+.hud{position:absolute;left:12px;right:12px;top:calc(12px + env(safe-area-inset-top));display:flex;justify-content:space-between;gap:10px;pointer-events:none}
+.hudCard{background:rgba(20,31,25,.84);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:10px 12px;box-shadow:0 8px 18px rgba(0,0,0,.18)}
+#objective{max-width:68%;font-size:14px;line-height:1.25}
+#objective b{display:block;color:#f3d986;font-size:13px;margin-bottom:2px}
+#stats{font-size:13px;text-align:right;min-width:110px}
+#stats strong{font-size:17px}
 
-  .dialogue{
-    position:absolute;left:12px;right:12px;bottom:calc(108px + env(safe-area-inset-bottom));
-    background:rgba(246,239,223,.97);color:#253229;border-radius:18px;
-    padding:14px 16px;border:3px solid #26372d;box-shadow:0 8px 22px rgba(0,0,0,.28);
-    display:none;
-  }
-  .dialogue.show{display:block}
-  .speaker{font-weight:900;font-size:17px;margin-bottom:4px}
-  .dialogueText{font-size:16px;line-height:1.35}
-  .dialogue button{
-    margin-top:10px;width:100%;border:0;border-radius:12px;padding:11px 14px;
-    background:#496b56;color:white;font-size:16px;font-weight:800;
-  }
+.mapBtn{position:absolute;right:14px;top:calc(98px + env(safe-area-inset-top));border:0;border-radius:14px;padding:10px 13px;background:rgba(246,239,223,.96);color:#26372d;font-size:15px;font-weight:900;box-shadow:0 5px 14px rgba(0,0,0,.2);z-index:10}
+.mapPanel{position:absolute;inset:0;background:rgba(12,20,16,.75);display:none;place-items:center;padding:22px;z-index:30}
+.mapPanel.show{display:grid}
+.mapCard{width:min(92vw,520px);background:#efe5ca;color:#26372d;border:4px solid #33483a;border-radius:24px;padding:16px;box-shadow:0 15px 35px rgba(0,0,0,.35)}
+.mapCard h2{margin:0 0 10px}
+.miniMap{height:330px;border-radius:18px;position:relative;overflow:hidden;background:radial-gradient(circle at 50% 52%,#789b6d 0 27%,#4d7358 28% 45%,#294d3b 46%);border:3px solid #8b7652}
+.mapLabel{position:absolute;background:#fff9;padding:5px 7px;border-radius:8px;font-size:12px;font-weight:850}
+.mapYou{position:absolute;width:18px;height:18px;border-radius:50%;background:#d88b55;border:3px solid white;box-shadow:0 2px 6px #0005}
+.closeMap{width:100%;margin-top:12px;border:0;border-radius:13px;padding:12px;background:#486b52;color:white;font-weight:900;font-size:16px}
 
-  .controls{
-    position:absolute;left:0;right:0;bottom:calc(12px + env(safe-area-inset-bottom));
-    display:flex;justify-content:space-between;align-items:flex-end;padding:0 18px;
-    pointer-events:none;
-  }
-  .joystick{
-    width:104px;height:104px;border-radius:50%;
-    background:rgba(30,45,37,.62);border:2px solid rgba(255,255,255,.18);
-    position:relative;pointer-events:auto;touch-action:none;
-  }
-  .stick{
-    width:50px;height:50px;border-radius:50%;background:rgba(245,240,225,.9);
-    position:absolute;left:27px;top:27px;box-shadow:0 4px 14px rgba(0,0,0,.28);
-  }
-  .actionStack{display:grid;gap:10px;pointer-events:auto}
-  .actionBtn{
-    min-width:104px;min-height:50px;border:0;border-radius:16px;
-    font-size:16px;font-weight:900;color:white;background:#526f5a;
-    box-shadow:0 5px 0 #31473a;
-  }
-  .actionBtn.secondary{background:#6f6048;box-shadow:0 5px 0 #4c402f}
-  .actionBtn:disabled{opacity:.42;box-shadow:none}
+.dialogue{position:absolute;left:12px;right:12px;bottom:calc(118px + env(safe-area-inset-bottom));background:rgba(246,239,223,.98);color:#253229;border-radius:18px;padding:14px 16px;border:3px solid #26372d;box-shadow:0 8px 22px rgba(0,0,0,.28);display:none;z-index:16}
+.dialogue.show{display:block}
+.speaker{font-weight:900;font-size:17px;margin-bottom:4px}
+.dialogueText{font-size:16px;line-height:1.35}
+.dialogue button{margin-top:10px;width:100%;border:0;border-radius:12px;padding:11px 14px;background:#496b56;color:white;font-size:16px;font-weight:800}
 
-  .titleCard{
-    position:absolute;inset:0;background:linear-gradient(rgba(20,31,25,.1),rgba(20,31,25,.55));
-    display:grid;place-items:center;padding:22px;
-  }
-  .titlePanel{
-    width:min(92vw,520px);background:rgba(246,239,223,.96);color:#223028;
-    border-radius:24px;padding:22px;border:4px solid #2b3c31;
-    box-shadow:0 14px 32px rgba(0,0,0,.3);text-align:center;
-  }
-  .titlePanel h1{font-size:36px;margin:0 0 8px}
-  .titlePanel p{margin:0 0 14px;line-height:1.4}
-  .titlePanel input{
-    width:100%;font-size:18px;padding:13px 14px;border-radius:12px;
-    border:1px solid #a7a89e;margin:8px 0 12px;
-  }
-  .titlePanel button{
-    width:100%;padding:13px 16px;border:0;border-radius:14px;
-    background:#486b52;color:white;font-size:18px;font-weight:900;
-  }
-  .hint{
-    position:absolute;left:50%;transform:translateX(-50%);bottom:calc(128px + env(safe-area-inset-bottom));
-    background:rgba(20,31,25,.82);padding:8px 12px;border-radius:999px;
-    font-size:13px;display:none;white-space:nowrap;
-  }
-  .hint.show{display:block}
+.controls{position:absolute;left:0;right:0;bottom:calc(12px + env(safe-area-inset-bottom));display:flex;justify-content:flex-start;align-items:flex-end;padding:0 18px;pointer-events:none}
+.joystick{width:104px;height:104px;border-radius:50%;background:rgba(30,45,37,.64);border:2px solid rgba(255,255,255,.18);position:relative;pointer-events:auto;touch-action:none}
+.stick{width:50px;height:50px;border-radius:50%;background:rgba(245,240,225,.92);position:absolute;left:27px;top:27px;box-shadow:0 4px 14px rgba(0,0,0,.28)}
 
-  .mapBtn{
-    position:absolute;right:14px;top:calc(92px + env(safe-area-inset-top));
-    border:0;border-radius:14px;padding:10px 13px;background:rgba(246,239,223,.94);
-    color:#26372d;font-size:15px;font-weight:900;box-shadow:0 5px 14px rgba(0,0,0,.2);
-  }
-  .mapPanel{
-    position:absolute;inset:0;background:rgba(12,20,16,.72);display:none;
-    place-items:center;padding:22px;z-index:20;
-  }
-  .mapPanel.show{display:grid}
-  .mapCard{
-    width:min(92vw,520px);background:#efe5ca;color:#26372d;border:4px solid #33483a;
-    border-radius:24px;padding:16px;box-shadow:0 15px 35px rgba(0,0,0,.35)
-  }
-  .mapCard h2{margin:0 0 10px}
-  .miniMap{
-    height:330px;border-radius:18px;position:relative;overflow:hidden;
-    background:radial-gradient(circle at 50% 52%,#789b6d 0 27%,#4d7358 28% 45%,#294d3b 46%);
-    border:3px solid #8b7652;
-  }
-  .mapLabel{position:absolute;background:#fff9;padding:5px 7px;border-radius:8px;font-size:12px;font-weight:850}
-  .mapYou{position:absolute;width:18px;height:18px;border-radius:50%;background:#d88b55;border:3px solid white;box-shadow:0 2px 6px #0005}
-  .closeMap{width:100%;margin-top:12px;border:0;border-radius:13px;padding:12px;background:#486b52;color:white;font-weight:900;font-size:16px}
+.interactionHub{position:absolute;right:14px;top:46%;transform:translateY(-50%);z-index:14;display:flex;flex-direction:column;align-items:flex-end;gap:10px;pointer-events:auto}
+.hubMain{width:72px;height:72px;border-radius:50%;border:4px solid rgba(255,255,255,.92);background:#496b56;color:white;font-size:34px;line-height:1;box-shadow:0 8px 18px rgba(0,0,0,.28)}
+.hubMain.ready{animation:pulseHub 1.4s ease-in-out infinite}
+@keyframes pulseHub{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
+.interactionMenu{display:none;flex-direction:column;align-items:flex-end;gap:9px}
+.interactionMenu.open{display:flex}
+.interactionChoice{min-width:164px;min-height:58px;border:3px solid rgba(255,255,255,.92);border-radius:18px;background:rgba(246,239,223,.98);color:#26372d;display:flex;align-items:center;gap:12px;padding:8px 14px 8px 10px;box-shadow:0 8px 18px rgba(0,0,0,.22);font-weight:900;font-size:16px;text-align:left}
+.interactionChoice .icon{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:#dfe9d8;font-size:26px;flex:0 0 42px}
+.interactionChoice .label{line-height:1.05}
+.interactionChoice small{display:block;font-size:11px;font-weight:700;opacity:.62;margin-top:3px}
+.interactionEmpty{background:rgba(20,31,25,.88);color:white;padding:10px 12px;border-radius:14px;font-size:13px;max-width:170px;text-align:center}
+
+.titleCard{position:absolute;inset:0;background:linear-gradient(rgba(20,31,25,.1),rgba(20,31,25,.58));display:grid;place-items:center;padding:22px;z-index:40}
+.titlePanel{width:min(92vw,520px);background:rgba(246,239,223,.97);color:#223028;border-radius:24px;padding:22px;border:4px solid #2b3c31;box-shadow:0 14px 32px rgba(0,0,0,.3);text-align:center}
+.titlePanel h1{font-size:36px;margin:0 0 8px}
+.titlePanel p{margin:0 0 14px;line-height:1.4}
+.titlePanel input{width:100%;font-size:18px;padding:13px 14px;border-radius:12px;border:1px solid #a7a89e;margin:8px 0 12px}
+.titlePanel button{width:100%;padding:13px 16px;border:0;border-radius:14px;background:#486b52;color:white;font-size:18px;font-weight:900}
 </style>
 </head>
 <body>
 <div id="gameWrap">
   <canvas id="game"></canvas>
+
+  <div class="hud">
+    <div id="objective" class="hudCard"><b>OBJECTIVE</b>Talk to Mossheart, the camp leader.</div>
+    <div id="stats" class="hudCard"><strong id="playerName">Rayapaw</strong><br>Prey: <span id="preyCount">0</span>/2</div>
+  </div>
+
   <button id="mapBtn" class="mapBtn" type="button">🗺️ Map</button>
+
   <div id="mapPanel" class="mapPanel">
     <div class="mapCard">
       <h2>Territory Map</h2>
-      <div id="miniMap" class="miniMap">
-        <div class="mapLabel" style="left:38%;top:43%">Camp</div>
-        <div class="mapLabel" style="left:38%;top:76%">Forest Path</div>
-        <div class="mapLabel" style="left:8%;top:15%">Pine Woods</div>
-        <div class="mapLabel" style="right:7%;top:18%">River</div>
-        <div class="mapLabel" style="right:7%;bottom:10%">Hunting Meadow</div>
+      <div class="miniMap">
+        <div class="mapLabel" style="left:39%;top:43%">Camp</div>
+        <div class="mapLabel" style="left:36%;top:76%">Forest Path</div>
+        <div class="mapLabel" style="left:7%;top:14%">Pine Woods</div>
+        <div class="mapLabel" style="right:6%;top:18%">River</div>
+        <div class="mapLabel" style="right:4%;bottom:9%">Hunting Meadow</div>
         <div id="mapYou" class="mapYou"></div>
       </div>
       <button id="closeMap" class="closeMap" type="button">Back to game</button>
     </div>
   </div>
-
-  <div class="hud">
-    <div id="objective" class="hudCard">
-      <b>OBJECTIVE</b>
-      Talk to Mossheart, the camp leader.
-    </div>
-    <div id="stats" class="hudCard">
-      <strong id="playerName">Rayapaw</strong><br>
-      Prey: <span id="preyCount">0</span>/2
-    </div>
-  </div>
-
-  <div id="hint" class="hint">Approach a cat or object</div>
 
   <div id="dialogue" class="dialogue">
     <div id="speaker" class="speaker"></div>
@@ -173,10 +98,11 @@
     <div id="joystick" class="joystick" aria-label="Movement joystick">
       <div id="stick" class="stick"></div>
     </div>
-    <div class="actionStack">
-      <button id="interactBtn" class="actionBtn" type="button" disabled>Interact</button>
-      <button id="pounceBtn" class="actionBtn secondary" type="button" disabled>Pounce</button>
-    </div>
+  </div>
+
+  <div class="interactionHub">
+    <div id="interactionMenu" class="interactionMenu"></div>
+    <button id="hubMain" class="hubMain" type="button" aria-label="Open interactions">🐾</button>
   </div>
 
   <div id="titleCard" class="titleCard">
@@ -191,469 +117,188 @@
 
 <script>
 (() => {
-  const canvas = document.getElementById('game');
-  const ctx = canvas.getContext('2d');
-  const wrap = document.getElementById('gameWrap');
-  const interactBtn = document.getElementById('interactBtn');
-  const pounceBtn = document.getElementById('pounceBtn');
-  const objective = document.getElementById('objective');
-  const preyCountEl = document.getElementById('preyCount');
-  const dialogue = document.getElementById('dialogue');
-  const speakerEl = document.getElementById('speaker');
-  const dialogueTextEl = document.getElementById('dialogueText');
-  const dialogueBtn = document.getElementById('dialogueBtn');
-  const titleCard = document.getElementById('titleCard');
-  const startBtn = document.getElementById('startBtn');
-  const nameInput = document.getElementById('nameInput');
-  const playerName = document.getElementById('playerName');
+const canvas=document.getElementById('game'),ctx=canvas.getContext('2d'),wrap=document.getElementById('gameWrap');
+const hubMain=document.getElementById('hubMain'),interactionMenu=document.getElementById('interactionMenu');
+const objective=document.getElementById('objective'),preyCountEl=document.getElementById('preyCount');
+const dialogue=document.getElementById('dialogue'),speakerEl=document.getElementById('speaker'),dialogueTextEl=document.getElementById('dialogueText'),dialogueBtn=document.getElementById('dialogueBtn');
+const titleCard=document.getElementById('titleCard'),startBtn=document.getElementById('startBtn'),nameInput=document.getElementById('nameInput'),playerName=document.getElementById('playerName');
+const mapBtn=document.getElementById('mapBtn'),mapPanel=document.getElementById('mapPanel'),closeMap=document.getElementById('closeMap'),mapYou=document.getElementById('mapYou');
 
-  let DPR = Math.min(window.devicePixelRatio || 1, 2);
-  let W = 0, H = 0;
+let DPR=Math.min(window.devicePixelRatio||1,2),W=0,H=0;
+function resize(){W=wrap.clientWidth;H=wrap.clientHeight;canvas.width=Math.floor(W*DPR);canvas.height=Math.floor(H*DPR);canvas.style.width=W+'px';canvas.style.height=H+'px';ctx.setTransform(DPR,0,0,DPR,0,0)}
+window.addEventListener('resize',resize);resize();
 
-  function resize(){
-    W = wrap.clientWidth;
-    H = wrap.clientHeight;
-    canvas.width = Math.floor(W * DPR);
-    canvas.height = Math.floor(H * DPR);
-    canvas.style.width = W + 'px';
-    canvas.style.height = H + 'px';
-    ctx.setTransform(DPR,0,0,DPR,0,0);
-  }
-  window.addEventListener('resize', resize);
-  resize();
+const world={w:1800,h:1300,zone:'camp'};
+const player={x:900,y:700,r:18,speed:180,name:'Rayapaw',prey:0,quest:false,completed:false};
+let cam={x:0,y:0},move={x:0,y:0},last=performance.now(),activeTarget=null,dialogueQueue=[],dialogueAction=null,inDialogue=false;
 
-  const world = {w:1800,h:1300,zone:'camp'};
-  const player = {x:900,y:700,r:18,speed:180,name:'Rayapaw',prey:0,quest:false,completed:false};
-  let cam = {x:0,y:0};
-  let move = {x:0,y:0};
-  let last = performance.now();
-  let activeTarget = null;
-  let dialogueQueue = [];
-  let dialogueAction = null;
-  let inDialogue = false;
+const campNPCs=[
+{id:'leader',name:'Mossheart',x:900,y:420,color:'#a76d4b',role:'Leader',eye:'#96c86f',mark:'stripe'},
+{id:'healer',name:'Dappleleaf',x:620,y:590,color:'#d8d0bf',role:'Healer',eye:'#74a8ce',mark:'patch'},
+{id:'warrior',name:'Ashstep',x:1150,y:650,color:'#59626a',role:'Warrior',eye:'#d3b35f',mark:'chest'},
+{id:'apprentice',name:'Pipaw',x:760,y:840,color:'#d4a66d',role:'Apprentice',eye:'#7dbb7d',mark:'stripe'}
+];
 
-  const campNPCs = [
-    {id:'leader',name:'Mossheart',x:900,y:420,color:'#b7774e',role:'Leader',mood:'calm'},
-    {id:'healer',name:'Dappleleaf',x:620,y:590,color:'#ded2ba',role:'Healer',mood:'kind'},
-    {id:'warrior',name:'Ashstep',x:1150,y:650,color:'#687078',role:'Warrior',mood:'serious'},
-    {id:'apprentice',name:'Pipaw',x:760,y:840,color:'#d4a66d',role:'Apprentice',mood:'excited'}
-  ];
+const forestPrey=[];
+['mouse','rabbit','mouse','mouse','rabbit','mouse','rabbit','mouse','rabbit','mouse','mouse','rabbit','mouse','rabbit'].forEach((kind,i)=>{
+  forestPrey.push({id:i+1,kind,x:250+(i*149)%1270,y:220+(i*213)%820,caught:false,phase:i*.83,vx:(i%2?1:-1)*(kind==='rabbit'?46:26),vy:((i%3)-1)*(kind==='rabbit'?30:16)})
+});
 
-  const forestPrey = [];
-  const preyKinds=['mouse','mouse','mouse','rabbit','mouse','rabbit','mouse','rabbit','mouse','mouse','rabbit','mouse'];
-  preyKinds.forEach((kind,i)=>{
-    forestPrey.push({
-      id:i+1, kind,
-      x:260 + (i*137)%1250,
-      y:250 + (i*211)%760,
-      caught:false, phase:i*.83,
-      vx:(i%2?1:-1)*(kind==='rabbit'?48:28),
-      vy:((i%3)-1)*(kind==='rabbit'?32:18)
-    });
-  });
+const trees=[];
+for(let i=0;i<50;i++){const a=i*.62,r=440+(i%7)*38;trees.push({x:900+Math.cos(a)*r+((i%3)-1)*45,y:650+Math.sin(a)*r*.74+((i%5)-2)*22,s:.8+(i%4)*.12})}
 
-  const trees = [];
-  function makeTrees(){
-    trees.length = 0;
-    for(let i=0;i<46;i++){
-      const angle = i * 0.62;
-      const radius = 440 + (i%7)*38;
-      trees.push({
-        x:900 + Math.cos(angle)*radius + ((i%3)-1)*45,
-        y:650 + Math.sin(angle)*radius*0.74 + ((i%5)-2)*22,
-        s:0.8 + (i%4)*0.12
-      });
-    }
-  }
-  makeTrees();
+function sx(x){return x-cam.x} function sy(y){return y-cam.y}
+function drawCircle(x,y,r,c){ctx.fillStyle=c;ctx.beginPath();ctx.arc(sx(x),sy(y),r,0,Math.PI*2);ctx.fill()}
+function drawPath(x1,y1,x2,y2,w,c){ctx.strokeStyle=c;ctx.lineWidth=w;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(sx(x1),sy(y1));ctx.lineTo(sx(x2),sy(y2));ctx.stroke()}
+function drawTree(x,y,s=1){const X=sx(x),Y=sy(y);if(X<-80||X>W+80||Y<-120||Y>H+120)return;ctx.fillStyle='#5e4531';ctx.fillRect(X-8*s,Y+12*s,16*s,34*s);ctx.fillStyle='#2f5a3f';ctx.beginPath();ctx.arc(X,Y,34*s,0,Math.PI*2);ctx.fill();ctx.fillStyle='#3f7150';ctx.beginPath();ctx.arc(X-20*s,Y+5*s,24*s,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(X+20*s,Y+5*s,24*s,0,Math.PI*2);ctx.fill()}
+function drawDen(x,y,w,h,label){const X=sx(x),Y=sy(y);ctx.fillStyle='#5b4d3d';ctx.beginPath();ctx.ellipse(X,Y,w/2,h/2,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#27352d';ctx.beginPath();ctx.ellipse(X,Y+12,w*.2,h*.27,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='rgba(255,255,255,.82)';ctx.font='bold 12px -apple-system';ctx.textAlign='center';ctx.fillText(label,X,Y-h*.62)}
+function drawFreshKill(x,y){const X=sx(x),Y=sy(y);ctx.fillStyle='#745b42';ctx.beginPath();ctx.ellipse(X,Y,44,24,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#d7c9a4';ctx.beginPath();ctx.ellipse(X-9,Y-3,12,7,0,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(X+12,Y+4,10,6,0,0,Math.PI*2);ctx.fill()}
+function drawSign(x,y,text){const X=sx(x),Y=sy(y);ctx.fillStyle='#70563c';ctx.fillRect(X-4,Y,8,34);ctx.fillStyle='#d8c49c';ctx.fillRect(X-55,Y-24,110,28);ctx.fillStyle='#2b302a';ctx.font='bold 12px -apple-system';ctx.textAlign='center';ctx.fillText(text,X,Y-6)}
 
-  function drawBackground(){
-    if(world.zone==='camp'){
-      ctx.fillStyle='#496b53';ctx.fillRect(0,0,W,H);
-      drawWorldCircle(900,650,480,'#6f8f65');
-      drawWorldCircle(900,650,370,'#789b6d');
-      drawPath(900,650,900,1100,120,'#b8a27d');
-      drawPath(900,650,1280,900,90,'#b8a27d');
-      drawDen(900,300,170,100,'Leader den');
-      drawDen(540,520,150,90,'Healer den');
-      drawDen(1210,620,160,95,'Warriors');
-      drawDen(720,920,150,90,'Apprentices');
-      trees.forEach(t=>drawTree(t.x,t.y,t.s));
-      drawFreshKill(1030,820);
-      drawSign(900,1130,'Forest →');
-    }else{
-      ctx.fillStyle='#315240';ctx.fillRect(0,0,W,H);
-      for(let x=120;x<1700;x+=210){
-        for(let y=120;y<1250;y+=190){
-          if((x+y)%420!==0) drawTree(x+((y/190)%2)*70,y,1.05);
-        }
-      }
-      drawPath(120,1120,1680,180,110,'#8c7a5c');
-      drawSign(160,1120,'← Camp');
-      ctx.fillStyle='#6aa2b0';
-      ctx.fillRect(worldToScreenX(1380),worldToScreenY(160),220,860);
-    }
-  }
+function drawBackground(){
+ if(world.zone==='camp'){
+  ctx.fillStyle='#496b53';ctx.fillRect(0,0,W,H);
+  drawCircle(900,650,480,'#6f8f65');drawCircle(900,650,370,'#789b6d');
+  drawPath(900,650,900,1100,120,'#b8a27d');drawPath(900,650,1280,900,90,'#b8a27d');
+  drawDen(900,300,170,100,'Leader den');drawDen(540,520,150,90,'Healer den');drawDen(1210,620,160,95,'Warriors');drawDen(720,920,150,90,'Apprentices');
+  trees.forEach(t=>drawTree(t.x,t.y,t.s));drawFreshKill(1030,820);drawSign(900,1130,'Forest →');
+ }else{
+  ctx.fillStyle='#315240';ctx.fillRect(0,0,W,H);
+  for(let x=120;x<1700;x+=210){for(let y=120;y<1250;y+=190){if((x+y)%420!==0)drawTree(x+((y/190)%2)*70,y,1.05)}}
+  drawPath(120,1120,1680,180,110,'#8c7a5c');drawSign(160,1120,'← Camp');
+  ctx.fillStyle='#6aa2b0';ctx.fillRect(sx(1380),sy(160),220,860);
+ }
+}
 
-  function worldToScreenX(x){return x-cam.x}
-  function worldToScreenY(y){return y-cam.y}
+function drawCat(x,y,color,name,isPlayer=false,eye='#6fa7d2',mark='stripe'){
+ const X=sx(x),Y=sy(y);if(X<-60||X>W+60||Y<-60||Y>H+60)return;
+ ctx.save();ctx.translate(X,Y);
+ ctx.fillStyle='rgba(0,0,0,.16)';ctx.beginPath();ctx.ellipse(0,17,24,8,0,0,Math.PI*2);ctx.fill();
+ ctx.fillStyle=color;ctx.beginPath();ctx.ellipse(0,3,21,28,0,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(0,-20,18,0,Math.PI*2);ctx.fill();
+ ctx.beginPath();ctx.moveTo(-13,-31);ctx.lineTo(-6,-45);ctx.lineTo(-1,-31);ctx.fill();ctx.beginPath();ctx.moveTo(13,-31);ctx.lineTo(6,-45);ctx.lineTo(1,-31);ctx.fill();
+ ctx.strokeStyle=color;ctx.lineWidth=8;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(17,6);ctx.quadraticCurveTo(38,-8,30,-28);ctx.stroke();
 
-  function drawWorldCircle(x,y,r,color){
-    ctx.fillStyle=color;
-    ctx.beginPath();ctx.arc(worldToScreenX(x),worldToScreenY(y),r,0,Math.PI*2);ctx.fill();
-  }
+ if(mark==='stripe'){ctx.strokeStyle='#44372f';ctx.lineWidth=3;[-7,0,7].forEach(v=>{ctx.beginPath();ctx.moveTo(v,-36);ctx.lineTo(v-3,-29);ctx.stroke()})}
+ if(mark==='patch'){ctx.fillStyle='#f4ead7';ctx.beginPath();ctx.ellipse(8,-26,7,9,.3,0,Math.PI*2);ctx.fill()}
+ if(mark==='chest'){ctx.fillStyle='#f2e6cc';ctx.beginPath();ctx.ellipse(0,4,8,15,0,0,Math.PI*2);ctx.fill()}
 
-  function drawPath(x1,y1,x2,y2,w,color){
-    ctx.strokeStyle=color;ctx.lineWidth=w;ctx.lineCap='round';
-    ctx.beginPath();ctx.moveTo(worldToScreenX(x1),worldToScreenY(y1));ctx.lineTo(worldToScreenX(x2),worldToScreenY(y2));ctx.stroke();
-  }
+ ctx.fillStyle=eye;ctx.beginPath();ctx.arc(-6,-21,3.3,0,Math.PI*2);ctx.arc(6,-21,3.3,0,Math.PI*2);ctx.fill();
+ ctx.fillStyle='#111';ctx.beginPath();ctx.arc(-6,-21,1.4,0,Math.PI*2);ctx.arc(6,-21,1.4,0,Math.PI*2);ctx.fill();
+ ctx.fillStyle='#b56d6d';ctx.beginPath();ctx.arc(0,-15,2.3,0,Math.PI*2);ctx.fill();
+ ctx.fillStyle='rgba(255,255,255,.92)';ctx.font='bold 12px -apple-system';ctx.textAlign='center';ctx.fillText(name,0,-53);
+ ctx.restore();
+}
 
-  function drawTree(x,y,s=1){
-    const sx=worldToScreenX(x), sy=worldToScreenY(y);
-    if(sx<-80||sx>W+80||sy<-120||sy>H+120)return;
-    ctx.fillStyle='#5e4531';
-    ctx.fillRect(sx-8*s,sy+12*s,16*s,34*s);
-    ctx.fillStyle='#2f5a3f';
-    ctx.beginPath();ctx.arc(sx,sy,34*s,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='#3f7150';
-    ctx.beginPath();ctx.arc(sx-20*s,sy+5*s,24*s,0,Math.PI*2);ctx.fill();
-    ctx.beginPath();ctx.arc(sx+20*s,sy+5*s,24*s,0,Math.PI*2);ctx.fill();
-  }
+function drawPrey(p){
+ const bob=Math.sin(performance.now()/300+p.phase)*2,X=sx(p.x),Y=sy(p.y+bob);
+ if(X<-50||X>W+50||Y<-50||Y>H+50)return;
+ if(p.kind==='rabbit'){
+  ctx.fillStyle='#b9aa92';ctx.beginPath();ctx.ellipse(X,Y,14,10,0,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(X+11,Y-5,7,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.ellipse(X+9,Y-17,4,12,-.18,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(X+16,Y-16,4,12,.18,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#eee6d7';ctx.beginPath();ctx.arc(X-13,Y-2,5,0,Math.PI*2);ctx.fill();
+ }else{
+  ctx.fillStyle='#9b8d7e';ctx.beginPath();ctx.ellipse(X,Y,10,7,0,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(X+8,Y-3,5,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='#9b8d7e';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(X-9,Y);ctx.quadraticCurveTo(X-22,Y-7,X-27,Y+3);ctx.stroke();
+ }
+}
 
-  function drawDen(x,y,w,h,label){
-    const sx=worldToScreenX(x),sy=worldToScreenY(y);
-    ctx.fillStyle='#5b4d3d';
-    ctx.beginPath();
-    ctx.ellipse(sx,sy,w/2,h/2,0,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='#27352d';
-    ctx.beginPath();ctx.ellipse(sx,sy+12,w*.2,h*.27,0,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='rgba(255,255,255,.82)';
-    ctx.font='bold 12px -apple-system';ctx.textAlign='center';
-    ctx.fillText(label,sx,sy-h*.62);
-  }
+function dist(a,b){return Math.hypot(a.x-b.x,a.y-b.y)}
 
-  function drawFreshKill(x,y){
-    const sx=worldToScreenX(x),sy=worldToScreenY(y);
-    ctx.fillStyle='#745b42';
-    ctx.beginPath();ctx.ellipse(sx,sy,44,24,0,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='#d7c9a4';
-    ctx.beginPath();ctx.ellipse(sx-9,sy-3,12,7,0,0,Math.PI*2);ctx.fill();
-    ctx.beginPath();ctx.ellipse(sx+12,sy+4,10,6,0,0,Math.PI*2);ctx.fill();
-  }
+function updateTarget(){
+ activeTarget=null;let best=9999;
+ if(world.zone==='camp'){
+  campNPCs.forEach(n=>{const d=dist(player,n);if(d<90&&d<best){best=d;activeTarget={type:'npc',obj:n}}});
+  const dExit=Math.hypot(player.x-900,player.y-1110);if(dExit<95&&dExit<best){best=dExit;activeTarget={type:'exit'}};
+  const dPile=Math.hypot(player.x-1030,player.y-820);if(dPile<90&&dPile<best&&player.prey>0){best=dPile;activeTarget={type:'pile'}};
+ }else{
+  forestPrey.forEach(p=>{if(p.caught)return;const d=dist(player,p);if(d<120&&d<best){best=d;activeTarget={type:'prey',obj:p}}});
+  const dCamp=Math.hypot(player.x-160,player.y-1120);if(dCamp<95&&dCamp<best){best=dCamp;activeTarget={type:'campExit'}};
+ }
+ hubMain.classList.toggle('ready',!!activeTarget);
+ if(!activeTarget){interactionMenu.classList.remove('open');interactionMenu.innerHTML=''}
+}
 
-  function drawSign(x,y,text){
-    const sx=worldToScreenX(x),sy=worldToScreenY(y);
-    ctx.fillStyle='#70563c';ctx.fillRect(sx-4,sy,8,34);
-    ctx.fillStyle='#d8c49c';ctx.fillRect(sx-55,sy-24,110,28);
-    ctx.fillStyle='#2b302a';ctx.font='bold 12px -apple-system';ctx.textAlign='center';
-    ctx.fillText(text,sx,sy-6);
-  }
+function setObjective(text){objective.innerHTML='<b>OBJECTIVE</b>'+text}
+function showDialogue(name,lines,onDone){dialogueQueue=[...lines];dialogueAction=onDone||null;inDialogue=true;speakerEl.textContent=name;dialogue.classList.add('show');nextDialogueLine()}
+function nextDialogueLine(){if(dialogueQueue.length){dialogueTextEl.textContent=dialogueQueue.shift();dialogueBtn.textContent=dialogueQueue.length?'Continue':'Close'}else{dialogue.classList.remove('show');inDialogue=false;const fn=dialogueAction;dialogueAction=null;if(fn)fn()}}
+dialogueBtn.addEventListener('click',nextDialogueLine);
 
-  function drawCat(x,y,color,name,isPlayer=false){
-    const sx=worldToScreenX(x),sy=worldToScreenY(y);
-    if(sx<-60||sx>W+60||sy<-60||sy>H+60)return;
-    ctx.save();
-    ctx.translate(sx,sy);
-    ctx.fillStyle='rgba(0,0,0,.16)';
-    ctx.beginPath();ctx.ellipse(0,17,24,8,0,0,Math.PI*2);ctx.fill();
+function handleInteract(){
+ if(!activeTarget||inDialogue)return;
+ if(activeTarget.type==='npc'){
+  const n=activeTarget.obj;
+  if(n.id==='leader'){
+   if(!player.quest)showDialogue(n.name,[`There you are, ${player.name}. The camp is running low on food.`,'Head into the woods and bring back two pieces of prey before sunset.','Watch the animals carefully. Stalk before you pounce.'],()=>{player.quest=true;setObjective('Hunt 2 pieces of prey in the forest, then return them to camp.')});
+   else if(!player.completed)showDialogue(n.name,[player.prey>=2?'You have enough prey. Put it on the fresh-kill pile.':'Keep going. The clan is counting on you.']);
+   else showDialogue(n.name,['Good work. You fed the clan today. That is how trust is earned.']);
+  }else if(n.id==='healer')showDialogue(n.name,['You look healthy enough. Try not to prove me wrong.']);
+  else if(n.id==='warrior')showDialogue(n.name,['Quiet paws notice more than noisy ones.']);
+  else showDialogue(n.name,['I bet I could catch a mouse before you!']);
+ }else if(activeTarget.type==='exit'){world.zone='forest';player.x=220;player.y=1080;setObjective(player.quest?'Find and catch 2 pieces of prey.':'Explore the forest.')}
+ else if(activeTarget.type==='campExit'){world.zone='camp';player.x=900;player.y=1060}
+ else if(activeTarget.type==='pile'&&player.prey>=2){player.prey-=2;preyCountEl.textContent=player.prey;player.completed=true;setObjective('Mission complete! Talk to Mossheart.');showDialogue('Camp',['You add the prey to the fresh-kill pile. Nearby cats gather gratefully.'])}
+}
 
-    ctx.fillStyle=color;
-    ctx.beginPath();ctx.ellipse(0,3,21,28,0,0,Math.PI*2);ctx.fill();
-    ctx.beginPath();ctx.arc(0,-20,18,0,Math.PI*2);ctx.fill();
+function closeInteractionMenu(){interactionMenu.classList.remove('open')}
+function addInteraction(icon,label,subtext,handler){
+ const btn=document.createElement('button');btn.type='button';btn.className='interactionChoice';
+ btn.innerHTML=`<span class="icon" aria-hidden="true">${icon}</span><span class="label">${label}${subtext?`<small>${subtext}</small>`:''}</span>`;
+ btn.addEventListener('click',()=>{closeInteractionMenu();handler()});interactionMenu.appendChild(btn)
+}
+function observePrey(p){
+ const hint=p.kind==='rabbit'?'Rabbits are fast. Stalk first, then get close before you pounce.':'Mice are quick but easier to catch. Move slowly when you get close.';
+ showDialogue('Hunting',[`You spot a ${p.kind} moving through the undergrowth.`,hint])
+}
+function stalkPrey(p){
+ const dx=p.x-player.x,dy=p.y-player.y,m=Math.hypot(dx,dy)||1,step=Math.min(50,Math.max(16,m-50));
+ player.x+=dx/m*step;player.y+=dy/m*step;showDialogue('Stalk',['You lower your body and creep forward quietly.'])
+}
+function pouncePrey(p){
+ const d=Math.hypot(player.x-p.x,player.y-p.y),chance=p.kind==='rabbit'?(d<58?.72:.42):(d<68?.86:.62);
+ if(Math.random()<chance){p.caught=true;player.prey++;preyCountEl.textContent=player.prey;showDialogue('Hunt',[`You wait... then leap! You caught a ${p.kind}.`]);if(player.prey>=2)setObjective('Return to camp and place the prey on the fresh-kill pile.')}
+ else{const dx=p.x-player.x,dy=p.y-player.y,m=Math.hypot(dx,dy)||1,jump=p.kind==='rabbit'?150:100;p.x+=dx/m*jump;p.y+=dy/m*jump;showDialogue('Hunt',[`Missed! The ${p.kind} darts away. Try stalking closer first.`])}
+}
+function buildInteractionMenu(){
+ interactionMenu.innerHTML='';
+ if(!activeTarget){interactionMenu.innerHTML='<div class="interactionEmpty">Move closer to a cat, prey, path, or object.</div>';interactionMenu.classList.add('open');return}
+ if(activeTarget.type==='npc'){const n=activeTarget.obj;addInteraction('💬','Talk',n.name,handleInteract);addInteraction('👀','Look','Who is this cat?',()=>showDialogue(n.name,[`${n.name} is the clan ${n.role.toLowerCase()}.`]))}
+ else if(activeTarget.type==='prey'){const p=activeTarget.obj;addInteraction('👀','Watch',p.kind==='rabbit'?'Rabbit':'Mouse',()=>observePrey(p));addInteraction('🐈','Stalk','Creep closer',()=>stalkPrey(p));addInteraction('🐾','Pounce!','Try to catch it',()=>pouncePrey(p))}
+ else if(activeTarget.type==='exit')addInteraction('🌲','Explore','Go to the forest',handleInteract)
+ else if(activeTarget.type==='campExit')addInteraction('🏕️','Return','Go back to camp',handleInteract)
+ else if(activeTarget.type==='pile')addInteraction('🍖','Drop prey','Feed the clan',handleInteract);
+ interactionMenu.classList.add('open')
+}
+hubMain.addEventListener('click',()=>interactionMenu.classList.contains('open')?closeInteractionMenu():buildInteractionMenu());
 
-    ctx.beginPath();ctx.moveTo(-13,-31);ctx.lineTo(-6,-45);ctx.lineTo(-1,-31);ctx.fill();
-    ctx.beginPath();ctx.moveTo(13,-31);ctx.lineTo(6,-45);ctx.lineTo(1,-31);ctx.fill();
+startBtn.addEventListener('click',()=>{player.name=(nameInput.value.trim()||'Rayapaw').slice(0,20);playerName.textContent=player.name;titleCard.style.display='none';showDialogue('Camp',['Morning light spills into the clearing. Cats are already moving between the dens.','Mossheart, the camp leader, is waiting near the leader den.'])});
 
-    ctx.strokeStyle=color;ctx.lineWidth=8;ctx.lineCap='round';
-    ctx.beginPath();ctx.moveTo(17,6);ctx.quadraticCurveTo(38,-8,30,-28);ctx.stroke();
+function updateMapDot(){
+ let left,top;if(world.zone==='camp'){left=50+(player.x-900)/18;top=50+(player.y-650)/15}else{left=12+(player.x/world.w)*75;top=62+(player.y/world.h)*30}
+ mapYou.style.left=Math.max(3,Math.min(94,left))+'%';mapYou.style.top=Math.max(3,Math.min(92,top))+'%'
+}
+mapBtn.addEventListener('click',()=>{updateMapDot();mapPanel.classList.add('show')});
+closeMap.addEventListener('click',()=>mapPanel.classList.remove('show'));
 
-    ctx.fillStyle='#f2e6cc';
-    ctx.beginPath();ctx.ellipse(0,4,8,15,0,0,Math.PI*2);ctx.fill();
+const joystick=document.getElementById('joystick'),stick=document.getElementById('stick');
+let joyId=null,joyCenter={x:0,y:0};
+function joyStart(e){const t=e.changedTouches?e.changedTouches[0]:e;joyId=t.identifier??'mouse';const r=joystick.getBoundingClientRect();joyCenter={x:r.left+r.width/2,y:r.top+r.height/2};joyMove(e)}
+function joyMove(e){if(joyId===null)return;let t;if(e.changedTouches){t=[...e.changedTouches].find(x=>x.identifier===joyId);if(!t)return}else t=e;let dx=t.clientX-joyCenter.x,dy=t.clientY-joyCenter.y;const m=Math.hypot(dx,dy),max=34;if(m>max){dx=dx/m*max;dy=dy/m*max}stick.style.transform=`translate(${dx}px,${dy}px)`;move.x=dx/max;move.y=dy/max;e.preventDefault()}
+function joyEnd(e){if(e.changedTouches){const match=[...e.changedTouches].some(x=>x.identifier===joyId);if(!match)return}joyId=null;move.x=move.y=0;stick.style.transform='translate(0,0)'}
+joystick.addEventListener('touchstart',joyStart,{passive:false});joystick.addEventListener('touchmove',joyMove,{passive:false});joystick.addEventListener('touchend',joyEnd,{passive:false});joystick.addEventListener('mousedown',joyStart);window.addEventListener('mousemove',e=>{if(joyId==='mouse')joyMove(e)});window.addEventListener('mouseup',e=>{if(joyId==='mouse')joyEnd(e)});
 
-    // Individual markings so clan cats are visually distinct.
-    const mark=(name.charCodeAt(0)+name.length)%4;
-    if(mark===0){
-      ctx.fillStyle='#3d3530';ctx.beginPath();ctx.ellipse(-8,-28,7,5,-.4,0,Math.PI*2);ctx.fill();
-    }else if(mark===1){
-      ctx.strokeStyle='#55483d';ctx.lineWidth=3;
-      [-5,1,7].forEach(xx=>{ctx.beginPath();ctx.moveTo(xx,-36);ctx.lineTo(xx-3,-29);ctx.stroke()});
-    }else if(mark===2){
-      ctx.fillStyle='#f7efe0';ctx.beginPath();ctx.ellipse(7,-26,6,8,.3,0,Math.PI*2);ctx.fill();
-    }else{
-      ctx.fillStyle='#59463c';ctx.beginPath();ctx.ellipse(-10,1,6,12,-.2,0,Math.PI*2);ctx.fill();
-    }
-
-    ctx.fillStyle=isPlayer?'#6fa7d2':'#a9d075';
-    ctx.beginPath();ctx.arc(-6,-21,3.3,0,Math.PI*2);ctx.arc(6,-21,3.3,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='#111';
-    ctx.beginPath();ctx.arc(-6,-21,1.4,0,Math.PI*2);ctx.arc(6,-21,1.4,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='#b56d6d';ctx.beginPath();ctx.arc(0,-15,2.3,0,Math.PI*2);ctx.fill();
-
-    ctx.fillStyle='rgba(255,255,255,.92)';
-    ctx.font='bold 12px -apple-system';ctx.textAlign='center';
-    ctx.fillText(name,0,-53);
-    ctx.restore();
-  }
-
-  function drawPrey(p){
-    const bob=Math.sin(performance.now()/300+p.phase)*2;
-    const sx=worldToScreenX(p.x),sy=worldToScreenY(p.y+bob);
-    if(sx<-50||sx>W+50||sy<-50||sy>H+50)return;
-    if(p.kind==='rabbit'){
-      ctx.fillStyle='#b9aa92';
-      ctx.beginPath();ctx.ellipse(sx,sy,14,10,0,0,Math.PI*2);ctx.fill();
-      ctx.beginPath();ctx.arc(sx+11,sy-5,7,0,Math.PI*2);ctx.fill();
-      ctx.beginPath();ctx.ellipse(sx+9,sy-17,4,12,-.18,0,Math.PI*2);ctx.fill();
-      ctx.beginPath();ctx.ellipse(sx+16,sy-16,4,12,.18,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle='#eee6d7';ctx.beginPath();ctx.arc(sx-13,sy-2,5,0,Math.PI*2);ctx.fill();
-    }else{
-      ctx.fillStyle='#9b8d7e';
-      ctx.beginPath();ctx.ellipse(sx,sy,10,7,0,0,Math.PI*2);ctx.fill();
-      ctx.beginPath();ctx.arc(sx+8,sy-3,5,0,Math.PI*2);ctx.fill();
-      ctx.strokeStyle='#9b8d7e';ctx.lineWidth=2;
-      ctx.beginPath();ctx.moveTo(sx-9,sy);ctx.quadraticCurveTo(sx-22,sy-7,sx-27,sy+3);ctx.stroke();
-    }
-  }
-
-  function dist(a,b){return Math.hypot(a.x-b.x,a.y-b.y)}
-
-  function updateTarget(){
-    activeTarget=null;
-    let best=9999;
-
-    if(world.zone==='camp'){
-      campNPCs.forEach(n=>{
-        const d=dist(player,n);
-        if(d<70 && d<best){best=d;activeTarget={type:'npc',obj:n}}
-      });
-      const exit={x:900,y:1110};
-      const dExit=Math.hypot(player.x-exit.x,player.y-exit.y);
-      if(dExit<85 && dExit<best){best=dExit;activeTarget={type:'exit'}}
-
-      const pile={x:1030,y:820};
-      const dPile=Math.hypot(player.x-pile.x,player.y-pile.y);
-      if(dPile<85 && dPile<best && player.prey>0){best=dPile;activeTarget={type:'pile'}}
-    }else{
-      forestPrey.forEach(p=>{
-        if(p.caught)return;
-        const d=dist(player,p);
-        if(d<75 && d<best){best=d;activeTarget={type:'prey',obj:p}}
-      });
-      const campExit={x:160,y:1120};
-      const dCamp=Math.hypot(player.x-campExit.x,player.y-campExit.y);
-      if(dCamp<90 && dCamp<best){best=dCamp;activeTarget={type:'campExit'}}
-    }
-
-    interactBtn.disabled=!(activeTarget && activeTarget.type!=='prey');
-    pounceBtn.disabled=!(activeTarget && activeTarget.type==='prey');
-    interactBtn.textContent=activeTarget && activeTarget.type==='npc' ? 'Talk' :
-      activeTarget && activeTarget.type==='exit' ? 'Go to forest' :
-      activeTarget && activeTarget.type==='campExit' ? 'Return to camp' :
-      activeTarget && activeTarget.type==='pile' ? 'Drop prey' : 'Interact';
-  }
-
-  function setObjective(text){
-    objective.innerHTML='<b>OBJECTIVE</b>'+text;
-  }
-
-  function showDialogue(name,lines,onDone){
-    dialogueQueue=[...lines];
-    dialogueAction=onDone||null;
-    inDialogue=true;
-    speakerEl.textContent=name;
-    dialogue.classList.add('show');
-    nextDialogueLine();
-  }
-
-  function nextDialogueLine(){
-    if(dialogueQueue.length){
-      dialogueTextEl.textContent=dialogueQueue.shift();
-      dialogueBtn.textContent=dialogueQueue.length?'Continue':'Close';
-    }else{
-      dialogue.classList.remove('show');
-      inDialogue=false;
-      const fn=dialogueAction;dialogueAction=null;
-      if(fn)fn();
-    }
-  }
-  dialogueBtn.addEventListener('click',nextDialogueLine);
-
-  function handleInteract(){
-    if(!activeTarget || inDialogue)return;
-    if(activeTarget.type==='npc'){
-      const n=activeTarget.obj;
-      if(n.id==='leader'){
-        if(!player.quest){
-          showDialogue(n.name,[
-            `There you are, ${player.name}. The camp is running low on food.`,
-            'Head into the woods and bring back two pieces of prey before sunset.',
-            'Stay alert. The forest changes when you stop paying attention.'
-          ],()=>{
-            player.quest=true;
-            setObjective('Hunt 2 pieces of prey in the forest, then return them to camp.');
-          });
-        }else if(!player.completed){
-          showDialogue(n.name,[player.prey>=2?'You have enough prey. Put it on the fresh-kill pile.':'Keep going. The clan is counting on you.']);
-        }else{
-          showDialogue(n.name,['Good work. You fed the clan today. That is how trust is earned.']);
-        }
-      }else if(n.id==='healer'){
-        showDialogue(n.name,['You look healthy enough. Try not to prove me wrong.']);
-      }else if(n.id==='warrior'){
-        showDialogue(n.name,['Patrol the edges of camp sometime. Quiet feet notice more.']);
-      }else{
-        showDialogue(n.name,['I bet I could catch a mouse before you!']);
-      }
-    }else if(activeTarget.type==='exit'){
-      world.zone='forest';player.x=220;player.y=1080;setObjective(player.quest?'Find and catch 2 pieces of prey.':'Explore the forest.');
-    }else if(activeTarget.type==='campExit'){
-      world.zone='camp';player.x=900;player.y=1060;
-    }else if(activeTarget.type==='pile'){
-      if(player.prey>=2){
-        player.prey-=2;preyCountEl.textContent=player.prey;
-        player.completed=true;
-        setObjective('Mission complete! Talk to Mossheart.');
-        showDialogue('Camp',['You add the prey to the fresh-kill pile. Nearby cats gather gratefully.']);
-      }
-    }
-  }
-  interactBtn.addEventListener('click',handleInteract);
-
-  pounceBtn.addEventListener('click',()=>{
-    if(!activeTarget || activeTarget.type!=='prey' || inDialogue)return;
-    const p=activeTarget.obj;
-    if(Math.random()<0.78){
-      p.caught=true;player.prey++;
-      preyCountEl.textContent=player.prey;
-      showDialogue('Hunt',[`You wait... then pounce! You caught a ${p.kind}.`]);
-      if(player.prey>=2)setObjective('Return to camp and place the prey on the fresh-kill pile.');
-    }else{
-      p.x+=90;p.y-=50;
-      showDialogue('Hunt',['Too soon! The mouse darts away. Get close and try again.']);
-    }
-  });
-
-  startBtn.addEventListener('click',()=>{
-    player.name=(nameInput.value.trim()||'Rayapaw').slice(0,20);
-    playerName.textContent=player.name;
-    titleCard.style.display='none';
-    showDialogue('Camp',['Morning light spills into the clearing. Cats are already moving between the dens.','Mossheart, the camp leader, is waiting near the leader den.']);
-  });
-
-  const mapBtn=document.getElementById('mapBtn');
-  const mapPanel=document.getElementById('mapPanel');
-  const closeMap=document.getElementById('closeMap');
-  const mapYou=document.getElementById('mapYou');
-  function updateMapDot(){
-    let left,top;
-    if(world.zone==='camp'){
-      left=50+(player.x-900)/18; top=50+(player.y-650)/15;
-    }else{
-      left=12+(player.x/world.w)*75; top=62+(player.y/world.h)*30;
-    }
-    mapYou.style.left=Math.max(3,Math.min(94,left))+'%';
-    mapYou.style.top=Math.max(3,Math.min(92,top))+'%';
-  }
-  mapBtn.addEventListener('click',()=>{updateMapDot();mapPanel.classList.add('show')});
-  closeMap.addEventListener('click',()=>mapPanel.classList.remove('show'));
-
-  const joystick=document.getElementById('joystick');
-  const stick=document.getElementById('stick');
-  let joyId=null,joyCenter={x:0,y:0};
-
-  function joyStart(e){
-    const t=e.changedTouches?e.changedTouches[0]:e;
-    joyId=t.identifier??'mouse';
-    const r=joystick.getBoundingClientRect();
-    joyCenter={x:r.left+r.width/2,y:r.top+r.height/2};
-    joyMove(e);
-  }
-  function joyMove(e){
-    if(joyId===null)return;
-    let t;
-    if(e.changedTouches){
-      t=[...e.changedTouches].find(x=>x.identifier===joyId);
-      if(!t)return;
-    }else t=e;
-    let dx=t.clientX-joyCenter.x,dy=t.clientY-joyCenter.y;
-    const m=Math.hypot(dx,dy),max=34;
-    if(m>max){dx=dx/m*max;dy=dy/m*max}
-    stick.style.transform=`translate(${dx}px,${dy}px)`;
-    move.x=dx/max;move.y=dy/max;
-    e.preventDefault();
-  }
-  function joyEnd(e){
-    if(e.changedTouches){
-      const match=[...e.changedTouches].some(x=>x.identifier===joyId);
-      if(!match)return;
-    }
-    joyId=null;move.x=move.y=0;stick.style.transform='translate(0,0)';
-  }
-
-  joystick.addEventListener('touchstart',joyStart,{passive:false});
-  joystick.addEventListener('touchmove',joyMove,{passive:false});
-  joystick.addEventListener('touchend',joyEnd,{passive:false});
-  joystick.addEventListener('mousedown',joyStart);
-  window.addEventListener('mousemove',e=>{if(joyId==='mouse')joyMove(e)});
-  window.addEventListener('mouseup',e=>{if(joyId==='mouse')joyEnd(e)});
-
-  function clampPlayer(){
-    player.x=Math.max(45,Math.min(world.w-45,player.x));
-    player.y=Math.max(45,Math.min(world.h-45,player.y));
-    if(world.zone==='camp'){
-      const dx=player.x-900,dy=player.y-650;
-      const d=Math.hypot(dx,dy);
-      if(d>535){
-        player.x=900+dx/d*535;player.y=650+dy/d*535;
-      }
-    }
-  }
-
-  function update(dt){
-    if(world.zone==='forest'){
-      forestPrey.forEach(p=>{
-        if(p.caught)return;
-        p.x+=p.vx*dt; p.y+=p.vy*dt;
-        if(p.x<180||p.x>1570){p.vx*=-1;p.x=Math.max(180,Math.min(1570,p.x))}
-        if(p.y<180||p.y>1080){p.vy*=-1;p.y=Math.max(180,Math.min(1080,p.y))}
-        // Prey becomes skittish if the player gets close.
-        const d=Math.hypot(player.x-p.x,player.y-p.y);
-        if(d<150){
-          const dx=p.x-player.x,dy=p.y-player.y,m=Math.hypot(dx,dy)||1;
-          const flee=p.kind==='rabbit'?95:65;
-          p.x+=dx/m*flee*dt;p.y+=dy/m*flee*dt;
-        }
-      });
-    }
-    if(!inDialogue && titleCard.style.display==='none'){
-      const len=Math.hypot(move.x,move.y)||1;
-      player.x += (move.x/len)*player.speed*dt;
-      player.y += (move.y/len)*player.speed*dt;
-      clampPlayer();
-    }
-    cam.x += ((player.x-W/2)-cam.x)*Math.min(1,dt*7);
-    cam.y += ((player.y-H/2)-cam.y)*Math.min(1,dt*7);
-    cam.x=Math.max(0,Math.min(world.w-W,cam.x));
-    cam.y=Math.max(0,Math.min(world.h-H,cam.y));
-    updateTarget();
-  }
-
-  function render(){
-    drawBackground();
-    if(world.zone==='camp'){
-      campNPCs.forEach(n=>drawCat(n.x,n.y,n.color,n.name,false));
-    }else{
-      forestPrey.forEach(p=>{if(!p.caught)drawPrey(p)});
-    }
-    drawCat(player.x,player.y,'#c9784e',player.name,true);
-  }
-
-  function loop(now){
-    const dt=Math.min((now-last)/1000,.035);last=now;
-    update(dt);render();
-    requestAnimationFrame(loop);
-  }
-  requestAnimationFrame(loop);
+function clampPlayer(){player.x=Math.max(45,Math.min(world.w-45,player.x));player.y=Math.max(45,Math.min(world.h-45,player.y));if(world.zone==='camp'){const dx=player.x-900,dy=player.y-650,d=Math.hypot(dx,dy);if(d>535){player.x=900+dx/d*535;player.y=650+dy/d*535}}}
+function update(dt){
+ if(world.zone==='forest'){
+  forestPrey.forEach(p=>{if(p.caught)return;p.x+=p.vx*dt;p.y+=p.vy*dt;if(p.x<180||p.x>1570){p.vx*=-1;p.x=Math.max(180,Math.min(1570,p.x))}if(p.y<180||p.y>1080){p.vy*=-1;p.y=Math.max(180,Math.min(1080,p.y))}
+   const d=Math.hypot(player.x-p.x,player.y-p.y);if(d<150){const dx=p.x-player.x,dy=p.y-player.y,m=Math.hypot(dx,dy)||1,flee=p.kind==='rabbit'?82:52;p.x+=dx/m*flee*dt;p.y+=dy/m*flee*dt}
+  })
+ }
+ if(!inDialogue&&titleCard.style.display==='none'){const len=Math.hypot(move.x,move.y)||1;player.x+=(move.x/len)*player.speed*dt;player.y+=(move.y/len)*player.speed*dt;if(Math.abs(move.x)+Math.abs(move.y)>.08)closeInteractionMenu();clampPlayer()}
+ cam.x+=((player.x-W/2)-cam.x)*Math.min(1,dt*7);cam.y+=((player.y-H/2)-cam.y)*Math.min(1,dt*7);cam.x=Math.max(0,Math.min(world.w-W,cam.x));cam.y=Math.max(0,Math.min(world.h-H,cam.y));updateTarget()
+}
+function render(){drawBackground();if(world.zone==='camp')campNPCs.forEach(n=>drawCat(n.x,n.y,n.color,n.name,false,n.eye,n.mark));else forestPrey.forEach(p=>{if(!p.caught)drawPrey(p)});drawCat(player.x,player.y,'#c9784e',player.name,true,'#6fa7d2','stripe')}
+function loop(now){const dt=Math.min((now-last)/1000,.035);last=now;update(dt);render();requestAnimationFrame(loop)}
+requestAnimationFrame(loop);
 })();
 </script>
 </body>
