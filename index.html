@@ -76,18 +76,48 @@ canvas{display:block;width:100%;height:100%}
  <div id="clock" class="card"><strong id="timeText">☀️ 7:00 AM</strong><br><span id="ageText">Young Kit • Day 1</span><div class="needRow"><span class="need">🍖 <span id="hunger">90</span></span><span class="need">⚡ <span id="energy">90</span></span><span class="need">❤️ <span id="health">100</span></span></div></div>
 </div>
 
-<div class="topBtns"><button id="heroBtn" class="topBtn">🐾 Me</button><button id="mapBtn" class="topBtn">🗺️ Map</button></div>
+<div class="topBtns"><button id="infoBtn" class="topBtn">❓</button><button id="heroBtn" class="topBtn">🐾 Me</button><button id="mapBtn" class="topBtn">🗺️ Map</button></div>
 
 <div class="controls"><div id="joystick" class="joystick"><div id="stick" class="stick"></div></div></div>
 <div class="hub"><div id="menu" class="menu"></div><button id="hubMain" class="hubMain">🐾</button></div>
 
 <div id="dialogue" class="dialogue"><div id="speaker" class="speaker"></div><div id="dialogueText" class="dialogueText"></div><button id="dialogueBtn">Continue</button></div>
 
+
+<div id="infoOverlay" class="overlay"><div class="panel">
+ <h2>How to Play</h2>
+ <p><b>First Light</b> is a growing-up adventure. You begin as a very young kit or pup, so the world opens gradually.</p>
+
+ <h3>Moving around</h3>
+ <p>Use the round joystick in the lower-left corner to move. When you get close enough to a character, den, or other interactive place, the paw button will glow.</p>
+
+ <h3>Talking & playing</h3>
+ <p>Walk near another character and tap the glowing paw. You can talk, learn who they are, and sometimes play, stalk, wrestle, eat, or do other activities. These actions improve skills and relationships.</p>
+
+ <h3>Days & growing up</h3>
+ <p>Your hunger and energy slowly fall during the day. Return to your sleeping place and choose <b>Sleep</b> to begin a new day. New events, areas, skills, and story moments unlock as days pass.</p>
+
+ <h3>Finding characters</h3>
+ <p>Pack and Colony members have routines. They may be in different places depending on the time of day. If someone is not where you last saw them, look around their usual areas.</p>
+
+ <h3>Exploration & the map</h3>
+ <p>The map starts covered in fog because you are still little. Exploring reveals important places. After your first night, listen for clues about something beyond the familiar paths...</p>
+
+ <h3>The waterfall</h3>
+ <p>Starting on <b>Day 2</b>, a new exploration objective appears. Follow the clue toward the <b>northwest / upper-left edge</b> of your home area. When you get close enough, the waterfall discovers itself and is added to your map.</p>
+
+ <h3>What happens later?</h3>
+ <p>First Light begins with family, play, and learning your home. As you grow, you will learn to hunt, track or stalk, explore farther, patrol borders, meet animals outside your own society, and make choices that affect relationships and the story.</p>
+
+ <p><b>Tip:</b> There is no need to rush. Talking to characters, playing with siblings, exploring, eating, and sleeping are all part of progressing.</p>
+ <button class="close" data-close="infoOverlay">Back to game</button>
+</div></div>
+
 <div id="heroOverlay" class="overlay"><div class="panel">
  <h2 id="heroName">Your Hero</h2><p id="heroSub"></p>
  <div class="grid">
-  <div class="box">Pouncing<b id="skillPounce">0</b></div><div class="box">Stealth<b id="skillStealth">0</b></div>
-  <div class="box">Fighting<b id="skillFight">0</b></div><div class="box">Social<b id="skillSocial">0</b></div>
+  <div class="box"><span id="skill1Label">Pouncing</span><b id="skillPounce">0</b></div><div class="box"><span id="skill2Label">Stealth</span><b id="skillStealth">0</b></div>
+  <div class="box"><span id="skill3Label">Fighting</span><b id="skillFight">0</b></div><div class="box"><span id="skill4Label">Social</span><b id="skillSocial">0</b></div>
  </div>
  <h3>Relationships</h3><div id="relationshipList"></div>
  <h3>Important memories</h3><div id="memoryList"></div>
@@ -135,7 +165,7 @@ canvas{display:block;width:100%;height:100%}
 const $=id=>document.getElementById(id),canvas=$('game'),ctx=canvas.getContext('2d'),wrap=$('wrap');
 let W,H,D=Math.min(devicePixelRatio||1,2);function resize(){W=wrap.clientWidth;H=wrap.clientHeight;canvas.width=W*D;canvas.height=H*D;ctx.setTransform(D,0,0,D,0,0)}addEventListener('resize',resize);resize();
 
-const player={x:900,y:680,name:'Raya',species:'wildcat',fur:'#c9784e',eye:'#6fa7d2',mark:'stripe',personality:'Curious',homeGroup:'Moonfall Colony',hunger:90,energy:90,health:100,skills:{pounce:0,stealth:0,fight:0,social:0},memories:['🌅 Born into the wild'],day:1,minute:420,waterfallFound:false,friendMet:false};
+const player={x:900,y:680,name:'Raya',species:'wildcat',fur:'#c9784e',eye:'#6fa7d2',mark:'stripe',personality:'Curious',homeGroup:'Moonfall Colony',hunger:90,energy:90,health:100,skills:{pounce:0,stealth:0,fight:0,social:0},memories:['🌅 Born into the wild'],day:1,minute:420,waterfallFound:false,friendMet:false,waterfallHintSeen:false};
 let cam={x:0,y:0},move={x:0,y:0},active=null,last=performance.now(),started=false,inDialogue=false,queue=[],afterDialogue=null;
 const rel={
  mother:{trust:100,talks:0,fights:0,bond:100,history:['❤️ Nightpelt is your mother.']},
@@ -146,14 +176,34 @@ const rel={
  healer:{trust:10,talks:0,fights:0,bond:10,history:['🌿 Clovermist is the healer.']},
  secretFriend:{trust:50,talks:0,fights:0,bond:50,history:['💧 You have not met anyone at the waterfall yet.']}
 };
-const cats=[
-{id:'mother',name:'Nightpelt',role:'Mother • loving and kind',x:840,y:610,color:'#34383b',eye:'#83b97c',mark:'chest'},
-{id:'sister',name:'Bramblepaw',role:'Sister • bold and competitive',x:950,y:630,color:'#9a6d4e',eye:'#d1ac56',mark:'stripe'},
-{id:'brother',name:'Jonnipur',role:'Brother • curious and playful',x:930,y:735,color:'#c4a078',eye:'#75a9cc',mark:'patch'},
-{id:'leader',name:'Mossheart',role:'Elder • strict but kind',x:900,y:365,color:'#a76d4b',eye:'#8ec272',mark:'stripe'},
-{id:'warrior',name:'Ashstep',role:'Hunter',x:1160,y:650,color:'#5b6268',eye:'#d1ac56',mark:'chest'},
-{id:'healer',name:'Clovermist',role:'Healer',x:620,y:570,color:'#d7cfbe',eye:'#75a9cc',mark:'patch'}
+let cats=[];
+const wildcatNPCs=[
+ {id:'mother',name:'Nightpelt',role:'Mother • loving and kind',x:840,y:610,color:'#34383b',eye:'#83b97c',mark:'chest'},
+ {id:'sister',name:'Bramble',role:'Sister • bold and competitive',x:950,y:630,color:'#9a6d4e',eye:'#d1ac56',mark:'stripe'},
+ {id:'brother',name:'Jonnipur',role:'Brother • curious and playful',x:930,y:735,color:'#c4a078',eye:'#75a9cc',mark:'patch'},
+ {id:'leader',name:'Mossheart',role:'Colony Elder • strict but kind',x:900,y:365,color:'#a76d4b',eye:'#8ec272',mark:'stripe'},
+ {id:'warrior',name:'Ashstep',role:'Hunter • quick and watchful',x:1160,y:650,color:'#5b6268',eye:'#d1ac56',mark:'chest'},
+ {id:'healer',name:'Clovermist',role:'Healer • keeper of herbs and stories',x:620,y:570,color:'#d7cfbe',eye:'#75a9cc',mark:'patch'}
 ];
+const wolfNPCs=[
+ {id:'mother',name:'Nightwind',role:'Mother • loving and steady',x:840,y:610,color:'#4c5053',eye:'#8eb585',mark:'chest'},
+ {id:'sister',name:'Briar',role:'Sister • bold and competitive',x:950,y:630,color:'#755f4e',eye:'#d0a85a',mark:'stripe'},
+ {id:'brother',name:'Juniper',role:'Brother • curious and playful',x:930,y:735,color:'#9b8b78',eye:'#78a5c3',mark:'patch'},
+ {id:'leader',name:'Stonecrest',role:'Pack Elder • strict but kind',x:900,y:365,color:'#69645d',eye:'#90b675',mark:'stripe'},
+ {id:'warrior',name:'Flint',role:'Hunter • strong and alert',x:1160,y:650,color:'#555b5f',eye:'#d1ac56',mark:'chest'},
+ {id:'healer',name:'Sage',role:'Healer • keeper of herbs and stories',x:620,y:570,color:'#b7b0a4',eye:'#75a9cc',mark:'patch'}
+];
+function setNPCSpecies(){
+ cats=(player.species==='wolf'?wolfNPCs:wildcatNPCs).map(c=>({...c,species:player.species,homeX:c.x,homeY:c.y,targetX:c.x,targetY:c.y,moveTimer:1+Math.random()*5}));
+ // Keep relationship history species-aware
+ rel.mother.history=[`❤️ ${cats.find(c=>c.id==='mother').name} is your mother.`];
+ rel.sister.history=[`🐾 ${cats.find(c=>c.id==='sister').name} is your sister.`];
+ rel.brother.history=[`🐾 ${cats.find(c=>c.id==='brother').name} is your brother.`];
+ rel.leader.history=[`👑 ${cats.find(c=>c.id==='leader').name} is an elder of your ${player.species==='wolf'?'pack':'colony'}.`];
+ rel.warrior.history=[`⚔️ ${cats.find(c=>c.id==='warrior').name} is one of the hunters.`];
+ rel.healer.history=[`🌿 ${cats.find(c=>c.id==='healer').name} is the healer.`];
+}
+
 
 function sx(x){return x-cam.x}function sy(y){return y-cam.y}
 function tree(x,y,s=1){let X=sx(x),Y=sy(y);ctx.fillStyle='#604834';ctx.fillRect(X-7*s,Y+8*s,14*s,34*s);ctx.fillStyle='#315b40';ctx.beginPath();ctx.arc(X,Y,30*s,0,7);ctx.fill();ctx.fillStyle='#437251';ctx.beginPath();ctx.arc(X-17*s,Y+4*s,20*s,0,7);ctx.fill();ctx.beginPath();ctx.arc(X+17*s,Y+4*s,20*s,0,7);ctx.fill()}
@@ -167,8 +217,13 @@ function animal(c,isPlayer=false){
  if(species==='wolf'){
    ctx.beginPath();ctx.ellipse(0,3,24,22,0,0,7);ctx.fill();
    ctx.beginPath();ctx.arc(0,-18,19,0,7);ctx.fill();
-   ctx.beginPath();ctx.moveTo(-14,-31);ctx.lineTo(-9,-45);ctx.lineTo(-2,-31);ctx.fill();
-   ctx.beginPath();ctx.moveTo(14,-31);ctx.lineTo(9,-45);ctx.lineTo(2,-31);ctx.fill();
+   // longer wolf muzzle
+   ctx.beginPath();ctx.ellipse(0,-10,11,8,0,0,7);ctx.fill();
+   // taller pointed ears
+   ctx.beginPath();ctx.moveTo(-14,-31);ctx.lineTo(-10,-49);ctx.lineTo(-2,-31);ctx.fill();
+   ctx.beginPath();ctx.moveTo(14,-31);ctx.lineTo(10,-49);ctx.lineTo(2,-31);ctx.fill();
+   // legs
+   ctx.fillRect(-15,16,7,18);ctx.fillRect(8,16,7,18);
    ctx.strokeStyle=c.color||player.fur;ctx.lineWidth=8;ctx.lineCap='round';
    ctx.beginPath();ctx.moveTo(20,4);ctx.quadraticCurveTo(38,1,43,15);ctx.stroke();
  }else{
@@ -188,10 +243,15 @@ function animal(c,isPlayer=false){
  ctx.fillStyle='#b66d6d';ctx.beginPath();ctx.arc(0,-15,2,0,7);ctx.fill();
  ctx.fillStyle='#fff';ctx.font='bold 12px -apple-system';ctx.textAlign='center';ctx.fillText(c.name||player.name,0,-52);ctx.restore()
 }
-function background(){ctx.fillStyle='#4d7255';ctx.fillRect(0,0,W,H);ctx.fillStyle='#789a6c';ctx.beginPath();ctx.arc(sx(900),sy(650),480,0,7);ctx.fill();ctx.strokeStyle='#b8a27d';ctx.lineWidth=100;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(sx(900),sy(650));ctx.lineTo(sx(900),sy(1100));ctx.stroke();den(850,760,230,145,'Nursery');den(900,275,170,100,player.species==='wolf'?'Pack Elder den':'Colony Elder den');den(540,520,150,90,'Healer den');den(1210,620,160,95,player.species==='wolf'?'Hunters':'Hunters');for(let i=0;i<34;i++){let a=i*.75,r=460+(i%5)*40;tree(900+Math.cos(a)*r,650+Math.sin(a)*r*.75,.85+(i%3)*.12)}
+function background(){ctx.fillStyle='#4d7255';ctx.fillRect(0,0,W,H);ctx.fillStyle='#789a6c';ctx.beginPath();ctx.arc(sx(900),sy(650),480,0,7);ctx.fill();ctx.strokeStyle='#b8a27d';ctx.lineWidth=100;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(sx(900),sy(650));ctx.lineTo(sx(900),sy(1100));ctx.stroke();den(850,760,230,145,player.species==='wolf'?'Pup Den':'Nursery');den(900,275,170,100,player.species==='wolf'?'Pack Elder den':'Colony Elder den');den(540,520,150,90,player.species==='wolf'?'Herb Hollow':'Healer den');den(1210,620,160,95,player.species==='wolf'?'Hunters':'Hunters');for(let i=0;i<34;i++){let a=i*.75,r=460+(i%5)*40;tree(900+Math.cos(a)*r,650+Math.sin(a)*r*.75,.85+(i%3)*.12)}
 ctx.fillStyle='#78a9bd';ctx.beginPath();ctx.ellipse(sx(640),sy(390),70,38,0,0,7);ctx.fill();
 ctx.fillStyle='#d7eef4';ctx.font='bold 11px -apple-system';ctx.textAlign='center';
 if(player.waterfallFound)ctx.fillText('Waterfall',sx(640),sy(335));
+else if(player.day>=2){
+ ctx.globalAlpha=.55;
+ ctx.fillText('💦',sx(640),sy(335));
+ ctx.globalAlpha=1;
+}
 }
 
 function distance(a,b){return Math.hypot(a.x-b.x,a.y-b.y)}
@@ -199,11 +259,17 @@ const waterfall={x:640,y:390};
 function maybeFindWaterfall(){
  if(player.waterfallFound)return;
  if(player.day<2)return;
- if(Math.hypot(player.x-waterfall.x,player.y-waterfall.y)<115){
+ if(Math.hypot(player.x-waterfall.x,player.y-waterfall.y)<155){
    player.waterfallFound=true;
    memory('💧 Discovered the hidden waterfall.');
    const lab=$('waterfallLabel'); if(lab){lab.textContent='Waterfall';lab.classList.remove('locked')}
-   dialogue('First Light',['You hear rushing water beyond the ferns.','A hidden waterfall spills into a clear pool. Something moves on the far bank...'],()=>meetSecretFriend());
+   $('objective').innerHTML='<b>FIRST LIGHT</b>Waterfall discovered!';
+   dialogue('First Light',[
+     'The rushing sound grows louder.',
+     'You push through the ferns...',
+     'A hidden waterfall spills into a clear pool.',
+     'Something moves on the far bank...'
+   ],()=>meetSecretFriend());
  }
 }
 function meetSecretFriend(){
@@ -233,20 +299,49 @@ $('dialogueBtn').onclick=nextLine;
 
 function memory(text){if(!player.memories.includes(text))player.memories.push(text)}
 function addChoice(icon,label,small,fn){let b=document.createElement('button');b.className='choice';b.innerHTML=`<span class="ico">${icon}</span><span>${label}<small>${small}</small></span>`;b.onclick=()=>{$('menu').classList.remove('open');fn()};$('menu').appendChild(b)}
-function talk(c){let r=rel[c.id];r.talks++;r.trust=Math.min(100,r.trust+2);player.skills.social++;r.history.push(`💬 Talked on Day ${player.day}.`);if(c.id==='mother')dialogue(c.name,[`Good morning, ${player.name}. Stay close until your paws get a little bigger.`,`Your siblings are awake. Go play — and come back when you're hungry.`],()=>{$('objective').innerHTML='<b>FIRST LIGHT</b>Play with Bramblepaw or Jonnipur.'});else if(c.id==='leader')dialogue(c.name,['Mossheart studies you carefully.','“Small paws today. Fierce paws someday, perhaps.”']);else dialogue(c.name,[`${c.name} flicks their tail and greets you.`])}
+function talk(c){let r=rel[c.id];r.talks++;r.trust=Math.min(100,r.trust+2);player.skills.social++;r.history.push(`💬 Talked on Day ${player.day}.`);if(c.id==='mother')dialogue(c.name,[`Good morning, ${player.name}. Stay close until your paws get a little bigger.`,`Your siblings are awake. Go play — and come back when you're hungry.`],()=>{$('objective').innerHTML=`<b>FIRST LIGHT</b>Play with ${cats.find(x=>x.id==='sister').name} or ${cats.find(x=>x.id==='brother').name}.`});else if(c.id==='leader')dialogue(c.name,['Mossheart studies you carefully.','“Small paws today. Fierce paws someday, perhaps.”']);else dialogue(c.name,[`${c.name} flicks their tail and greets you.`])}
 function playPounce(c){player.skills.pounce++;player.energy=Math.max(0,player.energy-5);rel[c.id].bond=Math.min(100,rel[c.id].bond+3);rel[c.id].history.push(`🐾 Practiced pouncing together on Day ${player.day}.`);dialogue('Play Pounce',[`You crouch... wiggle... POUNCE! ${c.name} tumbles into the moss.`,`Pouncing +1`])}
 function playFight(c){player.skills.fight++;player.energy=Math.max(0,player.energy-7);rel[c.id].fights++;rel[c.id].bond=Math.min(100,rel[c.id].bond+2);rel[c.id].history.push(`⚔️ Play-fought on Day ${player.day}.`);dialogue('Play Fight',[`You and ${c.name} wrestle until one of you rolls into the grass.`,`Fighting +1`])}
 function stalk(c){player.skills.stealth++;player.energy=Math.max(0,player.energy-4);rel[c.id].history.push(`👀 Practiced stalking on Day ${player.day}.`);dialogue('Stalk',[`You flatten yourself into the grass and creep toward ${c.name}.`,`Stealth +1`])}
-function eat(){player.hunger=Math.min(100,player.hunger+35);dialogue('Eat',['Nightpelt nudges a little food toward you. Your belly feels full.'])}
-function sleep(){player.energy=100;player.hunger=Math.max(30,player.hunger-15);player.day++;player.minute=420;memory(`🌙 Slept through the night after Day ${player.day-1}.`);dialogue('Sleep',[`You curl into the warm moss beside your family.`,`The forest fades away... and morning comes.`],()=>{$('objective').innerHTML='<b>FIRST LIGHT</b>Explore, play, and get to know your home.'})}
+function eat(){player.hunger=Math.min(100,player.hunger+35);dialogue('Eat',[`${cats.find(c=>c.id==='mother').name} nudges a little food toward you. Your belly feels full.`])} nudges a little food toward you. Your belly feels full.'])}
+function sleep(){
+ player.energy=100;
+ player.hunger=Math.max(30,player.hunger-15);
+ player.day++;
+ player.minute=420;
+ memory(`🌙 Slept through the night after Day ${player.day-1}.`);
+ dialogue('Sleep',[
+   `You curl into the warm moss beside your family.`,
+   `The forest fades away... and morning comes.`
+ ],()=>{
+   if(player.day===2 && !player.waterfallFound){
+     player.waterfallHintSeen=true;
+     memory('💦 Heard distant rushing water beyond the familiar paths.');
+     $('objective').innerHTML='<b>FIRST LIGHT</b>Explore northwest. Where is that sound of rushing water coming from?';
+     dialogue('Morning',[
+       `Something sounds different today.`,
+       `Beyond the familiar paths, far to the northwest, you can hear the faint rush of water.`,
+       `Maybe the world is bigger than you thought.`
+     ]);
+   }else{
+     $('objective').innerHTML='<b>FIRST LIGHT</b>Explore, play, and get to know your home.';
+   }
+ })
+}
 
-function openProfile(c){let r=rel[c.id];$('profileName').textContent=c.name;$('profileRole').textContent=c.role;$('profileTrust').textContent=r.trust;$('profileTalks').textContent=r.talks;$('profileFights').textContent=r.fights;$('profileBond').textContent=r.bond;$('profileHistory').innerHTML=r.history.slice(-6).map(x=>`<div class="memory">${x}</div>`).join('');$('profileOverlay').classList.add('show')}
+function openProfile(c){let r=rel[c.id];$('profileName').textContent=c.name;$('profileRole').textContent=`${c.role}${c.currentActivity?' • Now: '+c.currentActivity:''}`;$('profileTrust').textContent=r.trust;$('profileTalks').textContent=r.talks;$('profileFights').textContent=r.fights;$('profileBond').textContent=r.bond;$('profileHistory').innerHTML=r.history.slice(-6).map(x=>`<div class="memory">${x}</div>`).join('');$('profileOverlay').classList.add('show')}
 function buildMenu(){$('menu').innerHTML='';if(!active)return;if(active.type==='cat'){let c=active.cat;addChoice('💬','Talk',c.name,()=>talk(c));addChoice('🪪','Who is this?','Card + relationship history',()=>openProfile(c));if(c.id==='sister'||c.id==='brother'){addChoice('🐾','Play Pounce','Practice pouncing',()=>playPounce(c));addChoice('🐈‍⬛','Stalk','Sneak up quietly',()=>stalk(c));addChoice('⚔️','Play Fight','Friendly wrestling',()=>playFight(c))}if(c.id==='mother')addChoice('🍖','Eat','Ask Nightpelt for food',eat)}else if(active.type==='bed')addChoice('💤','Sleep','End the day',sleep);$('menu').classList.add('open')}
 $('hubMain').onclick=()=>$('menu').classList.contains('open')?$('menu').classList.remove('open'):buildMenu();
 
 function hero(){$('heroName').textContent=player.name;$('heroSub').textContent=`${player.personality} young ${player.species==='wolf'?'pup':'kit'} • ${player.homeGroup} • Day ${player.day}`;$('skillPounce').textContent=player.skills.pounce;$('skillStealth').textContent=player.skills.stealth;$('skillFight').textContent=player.skills.fight;$('skillSocial').textContent=player.skills.social;$('relationshipList').innerHTML=cats.map(c=>`<div class="relationship"><b>${c.name}</b><span>❤️ ${rel[c.id].bond} • Trust ${rel[c.id].trust}</span></div>`).join('');$('memoryList').innerHTML=player.memories.map(m=>`<div class="memory">${m}</div>`).join('');$('heroOverlay').classList.add('show')}
+$('infoBtn').onclick=()=>{$('infoOverlay').classList.add('show')};
 $('heroBtn').onclick=hero;
-$('mapBtn').onclick=()=>{$('mapDot').style.left='49%';$('mapDot').style.top='50%';$('mapOverlay').classList.add('show')};
+$('mapBtn').onclick=()=>{
+ $('mapDot').style.left='49%';$('mapDot').style.top='50%';
+ const lab=$('waterfallLabel');
+ if(lab && player.day>=2 && !player.waterfallFound){lab.textContent='💦 ???';lab.classList.remove('locked')}
+ $('mapOverlay').classList.add('show')
+};
 document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>$(b.dataset.close).classList.remove('show'));
 
 $('species').onchange=()=>{
@@ -254,6 +349,10 @@ $('species').onchange=()=>{
  $('speciesPreview').textContent=wolf?'🐺':'🐱';
  $('birthText').textContent=wolf?'You were just born into a wolf pack. Create your pup.':'You were just born into a wildcat colony. Create your kit.';
  $('homeGroup').innerHTML=wolf?'<option value="Stonepine Pack">Stonepine Pack</option><option value="Rivertrail Pack">Rivertrail Pack</option>':'<option value="Moonfall Colony">Moonfall Colony</option><option value="Pinewatch Colony">Pinewatch Colony</option>';
+ $('skill1Label').textContent=wolf?'Tracking':'Pouncing';
+ $('skill2Label').textContent=wolf?'Scenting':'Stealth';
+ $('skill3Label').textContent='Fighting';
+ $('skill4Label').textContent=wolf?'Pack Bond':'Social';
 };
 $('startBtn').onclick=()=>{
  player.name=$('nameInput').value.trim()||'Raya';
@@ -264,10 +363,12 @@ $('startBtn').onclick=()=>{
  player.mark=$('mark').value;
  player.homeGroup=$('homeGroup').value;
  player.memories=[`🌅 Born into ${player.homeGroup}`];
+ setNPCSpecies();
  $('start').style.display='none';started=true;
  const young=player.species==='wolf'?'pup':'kit';
  const society=player.species==='wolf'?'pack':'colony';
- dialogue('Nightpelt',[`Wake up, little ${player.name}.`,`I'm Nightpelt. I'm your mother. The nursery is your whole world for now — but it won't stay that way forever.`,`You belong to a ${society}. Stay close, young ${young}.`],()=>{$('objective').innerHTML='<b>FIRST LIGHT</b>Walk to Nightpelt and talk to her.'})
+ const mother=cats.find(c=>c.id==='mother');
+ dialogue(mother.name,[`Wake up, little ${player.name}.`,`I'm ${mother.name}. I'm your mother. The nursery is your whole world for now — but it won't stay that way forever.`,`You belong to a ${society}. Stay close, young ${young}.`],()=>{$('objective').innerHTML=`<b>FIRST LIGHT</b>Walk to ${mother.name} and talk to her. Tap ❓ anytime for help.`})
 };
 $('species').onchange();
 
@@ -277,8 +378,76 @@ function jmove(e){if(joyId===null)return;let t=e.changedTouches?[...e.changedTou
 function jend(){joyId=null;move={x:0,y:0};stick.style.transform='translate(0,0)'}
 joy.addEventListener('touchstart',jstart,{passive:false});joy.addEventListener('touchmove',jmove,{passive:false});joy.addEventListener('touchend',jend,{passive:false});joy.addEventListener('mousedown',jstart);addEventListener('mousemove',e=>{if(joyId==='m')jmove(e)});addEventListener('mouseup',jend);
 
+
+function npcScheduleBase(c){
+ const hour=(player.minute/60)%24;
+ const morning=hour<10, midday=hour>=10&&hour<17, evening=hour>=17;
+ const wolf=player.species==='wolf';
+
+ // Returning a "base" location gives each character a daily routine.
+ if(c.id==='mother'){
+   if(morning)return {x:850,y:700,label:wolf?'Pup Den':'Nursery'};
+   if(midday)return {x:820,y:620,label:'Central clearing'};
+   return {x:850,y:735,label:wolf?'Pup Den':'Nursery'};
+ }
+ if(c.id==='sister'){
+   if(morning)return {x:930,y:700,label:'Family den'};
+   if(midday)return {x:1040,y:570,label:'Play clearing'};
+   return {x:900,y:725,label:'Family den'};
+ }
+ if(c.id==='brother'){
+   if(morning)return {x:900,y:720,label:'Family den'};
+   if(midday)return {x:1000,y:650,label:'Play clearing'};
+   return {x:935,y:745,label:'Family den'};
+ }
+ if(c.id==='leader'){
+   if(morning)return {x:900,y:390,label:'Elder den'};
+   if(midday)return {x:930,y:515,label:'Central clearing'};
+   return {x:900,y:365,label:'Elder den'};
+ }
+ if(c.id==='warrior'){
+   if(morning)return {x:1110,y:610,label:'Hunter area'};
+   if(midday)return {x:1175,y:470,label:'Outer paths'};
+   return {x:1080,y:650,label:'Hunter area'};
+ }
+ if(c.id==='healer'){
+   if(morning)return {x:600,y:555,label:'Herb hollow'};
+   if(midday)return {x:660,y:525,label:'Gathering herbs'};
+   return {x:620,y:575,label:'Herb hollow'};
+ }
+ return {x:c.homeX,y:c.homeY,label:'Home'};
+}
+
+function updateNPCs(dt){
+ if(!started||inDialogue)return;
+ cats.forEach(c=>{
+   const base=npcScheduleBase(c);
+   c.moveTimer-=dt;
+
+   if(c.moveTimer<=0){
+     c.moveTimer=2.5+Math.random()*5.5;
+
+     // A little wandering around the current scheduled activity area.
+     let radius=c.id==='mother'?55:(c.id==='sister'||c.id==='brother'?90:(c.id==='warrior'?115:65));
+     let a=Math.random()*Math.PI*2, r=Math.random()*radius;
+     c.targetX=base.x+Math.cos(a)*r;
+     c.targetY=base.y+Math.sin(a)*r*.65;
+     c.targetX=Math.max(590,Math.min(1210,c.targetX));
+     c.targetY=Math.max(320,Math.min(930,c.targetY));
+     c.currentActivity=base.label;
+   }
+
+   let dx=c.targetX-c.x,dy=c.targetY-c.y,d=Math.hypot(dx,dy);
+   if(d>3){
+     let speed=(c.id==='sister'||c.id==='brother')?34:(c.id==='warrior'?28:23);
+     c.x+=dx/d*speed*dt;
+     c.y+=dy/d*speed*dt;
+   }
+ });
+}
+
 function timeDisplay(){let h=Math.floor(player.minute/60)%24,m=Math.floor(player.minute%60),amp=h>=12?'PM':'AM',hh=h%12||12,icon=h<8?'🌅':h<18?'☀️':h<21?'🌇':'🌙';$('timeText').textContent=`${icon} ${hh}:${String(m).padStart(2,'0')} ${amp}`;$('ageText').textContent=`Young ${player.species==='wolf'?'Pup':'Kit'} • Day ${player.day}`;$('hunger').textContent=Math.round(player.hunger);$('energy').textContent=Math.round(player.energy);$('health').textContent=Math.round(player.health)}
-function update(dt){if(started&&!inDialogue){let l=Math.hypot(move.x,move.y)||1;player.x+=move.x/l*145*dt;player.y+=move.y/l*145*dt;player.x=Math.max(560,Math.min(1240,player.x));player.y=Math.max(300,Math.min(980,player.y));if(Math.abs(move.x)+Math.abs(move.y)>.05)$('menu').classList.remove('open');player.minute+=dt*3.5;player.hunger=Math.max(0,player.hunger-dt*.035);player.energy=Math.max(0,player.energy-dt*.025)}cam.x+=((player.x-W/2)-cam.x)*Math.min(1,dt*7);cam.y+=((player.y-H/2)-cam.y)*Math.min(1,dt*7);cam.x=Math.max(0,Math.min(1800-W,cam.x));cam.y=Math.max(0,Math.min(1300-H,cam.y));updateTarget();maybeFindWaterfall();timeDisplay()}
+function update(dt){if(started&&!inDialogue){let l=Math.hypot(move.x,move.y)||1;player.x+=move.x/l*145*dt;player.y+=move.y/l*145*dt;player.x=Math.max(560,Math.min(1240,player.x));player.y=Math.max(300,Math.min(980,player.y));if(Math.abs(move.x)+Math.abs(move.y)>.05)$('menu').classList.remove('open');player.minute+=dt*3.5;player.hunger=Math.max(0,player.hunger-dt*.035);player.energy=Math.max(0,player.energy-dt*.025)}cam.x+=((player.x-W/2)-cam.x)*Math.min(1,dt*7);cam.y+=((player.y-H/2)-cam.y)*Math.min(1,dt*7);cam.x=Math.max(0,Math.min(1800-W,cam.x));cam.y=Math.max(0,Math.min(1300-H,cam.y));updateNPCs(dt);updateTarget();maybeFindWaterfall();timeDisplay()}
 function render(){background();cats.forEach(c=>animal({...c,species:player.species}));animal({x:player.x,y:player.y,name:player.name,color:player.fur,eye:player.eye,mark:player.mark,species:player.species},true)}
 function loop(t){let dt=Math.min((t-last)/1000,.035);last=t;update(dt);render();requestAnimationFrame(loop)}requestAnimationFrame(loop);
 })();
