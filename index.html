@@ -2,285 +2,558 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#f4efe4">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#1f2f27">
 <title>Clan Survival</title>
 <style>
-:root{
-  --paper:#fffaf0;--ink:#243029;--green:#486b52;--green2:#6f8f75;
-  --gold:#d3a84d;--fur:#8c6b56;--mark:#f0eee7;--eye:#4f7fa5;
-  --shadow:0 12px 28px rgba(28,42,34,.14)
-}
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;min-height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:linear-gradient(#f6f1e7,#e9e1d2);color:var(--ink)}
-body{padding-bottom:env(safe-area-inset-bottom)}
-.wrap{max-width:760px;margin:auto;padding:18px}
-header{padding:6px 2px 16px}
-h1{font-size:40px;line-height:1;margin:0 0 7px;letter-spacing:-.7px}
-.sub{opacity:.72;font-size:16px}
-.card{background:var(--paper);border-radius:24px;padding:18px;box-shadow:var(--shadow)}
-.stage{height:300px;border-radius:22px;background:linear-gradient(#dce9d3 0 73%,#7f9e6e 73%);position:relative;overflow:hidden;display:grid;place-items:center}
-.stage:before{content:"";position:absolute;left:0;right:0;bottom:53px;height:24px;background:radial-gradient(ellipse at center,#6d8c5e 0 30%,transparent 32%) 0 0/50px 24px repeat-x;opacity:.65}
-.cat{width:184px;height:184px;position:relative;transition:transform .18s ease;transform-origin:50% 90%}
-.fur{position:absolute;background:var(--fur)}
-.body{width:124px;height:90px;border-radius:50%;left:30px;top:88px}
-.head{width:104px;height:94px;border-radius:50%;left:40px;top:25px}
-.ear{width:43px;height:53px;clip-path:polygon(50% 0,100% 100%,0 100%);top:5px}
-.ear.l{left:43px}.ear.r{left:98px}
-.tail{width:92px;height:23px;border-radius:99px;left:117px;top:113px;transform:rotate(-35deg);transform-origin:left center}
-.chest{position:absolute;background:var(--mark);width:43px;height:61px;border-radius:50%;left:71px;top:103px}
-.forehead{position:absolute;background:var(--mark);width:24px;height:23px;clip-path:polygon(50% 0,100% 100%,0 100%);left:80px;top:41px;opacity:0}
-.stripe{position:absolute;width:44px;height:7px;border-radius:99px;background:#0003;left:70px;top:48px;opacity:0}
-.stripe.two{width:31px;left:77px;top:60px}
-.eye{position:absolute;background:var(--eye);width:13px;height:18px;border-radius:50%;top:62px}
-.eye.l{left:67px}.eye.r{left:103px}
-.pupil{position:absolute;background:#111;width:4px;height:12px;border-radius:50%;top:65px}
-.pupil.l{left:71px}.pupil.r{left:107px}
-.nose{position:absolute;width:14px;height:10px;background:#a85f65;border-radius:60%;left:85px;top:82px}
-.mouth{position:absolute;width:24px;height:10px;border-bottom:2px solid #63403f;border-radius:50%;left:80px;top:91px}
-.tag{position:absolute;right:13px;top:13px;background:#fffD;border-radius:99px;padding:8px 12px;font-weight:850;z-index:2}
-.cat.brave{transform:scale(1.04)}.cat.brave .tail{transform:rotate(-55deg)}
-.cat.clever .head{transform:rotate(5deg)}
-.cat.kind .mouth{width:31px;left:77px}
-.cat.curious .head{transform:rotate(-7deg)}.cat.curious .ear.l{transform:rotate(-13deg)}.cat.curious .ear.r{transform:rotate(13deg)}
-.cat.loyal .tail{transform:rotate(-10deg)}
-.cat.funny .head{transform:rotate(8deg)}
-label{display:block;font-weight:850;margin:18px 0 8px;font-size:18px}
-input{width:100%;font-size:18px;padding:15px;border:1px solid #b9bdb7;border-radius:14px;background:#fff;color:var(--ink)}
-.segment,.swatches{display:grid;gap:8px}
-.segment{grid-template-columns:repeat(3,1fr)}
-.swatches{grid-template-columns:repeat(5,1fr)}
-.choice,.swatch,.clan,.action,.primary,.secondary{touch-action:manipulation;user-select:none}
-.choice,.swatch{border:2px solid transparent;background:#efe9dc;border-radius:14px;min-height:52px;font-weight:800;color:var(--ink);font-size:15px}
-.choice.selected,.swatch.selected{border-color:var(--green);background:#e5ede1}
-.swatch span{display:block;width:28px;height:28px;border-radius:50%;margin:auto;border:1px solid #0002}
-.clans{display:grid;gap:10px}
-.clan{appearance:none;-webkit-appearance:none;width:100%;text-align:left;background:#f0eadf;color:var(--ink);border:3px solid transparent;border-radius:18px;padding:16px}
-.clan strong{font-size:22px;display:block}.clan small{font-size:16px}.clan.selected{border-color:var(--green);background:#e5ede1}
-.picked{margin:12px 0;background:#edf3e8;padding:12px 14px;border-radius:14px;font-weight:850}
-.primary,.secondary{width:100%;font-size:19px;font-weight:850;border:0;border-radius:16px;padding:15px 18px}
-.primary{background:var(--green);color:#fff}
-.secondary{background:#e8dec7;color:var(--ink);margin-top:12px}
-.hidden{display:none!important}
-.gamehead{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
-.pill{background:#e8dec7;border-radius:99px;padding:7px 10px;font-weight:750}
-.order{border-left:5px solid var(--gold);padding-left:12px;line-height:1.45}
-.story{background:#263a30;color:#fff;border-radius:18px;padding:17px;line-height:1.5;margin-top:16px;min-height:122px}
-.actions{display:grid;gap:10px;margin-top:18px}
-.action{background:#f0eadf;color:var(--ink);border:0;border-radius:16px;padding:16px;text-align:left;font-size:18px;font-weight:850}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
-.stat{background:#efe9dc;border-radius:14px;padding:10px;text-align:center}
-.stat b{display:block;font-size:22px}
-.xp{height:13px;background:#d9d6cc;border-radius:99px;overflow:hidden;margin-top:12px}
-.xpfill{height:100%;background:linear-gradient(90deg,var(--green2),var(--gold));width:0}
-.small{font-size:13px;opacity:.68;margin-top:7px}
-@media(max-width:520px){.segment{grid-template-columns:repeat(2,1fr)}.swatches{grid-template-columns:repeat(4,1fr)}}
+  :root{
+    --ink:#f8f4e8;
+    --ui:#1f2f27;
+    --ui2:#31443a;
+    --paper:#f6efdf;
+    --gold:#d4b063;
+    --accent:#93b28b;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{
+    margin:0;padding:0;background:#15231c;color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    overflow:hidden;height:100%;
+  }
+  body{touch-action:none}
+  #gameWrap{
+    position:relative;width:100vw;height:100vh;overflow:hidden;background:#24382d;
+  }
+  canvas{
+    display:block;width:100%;height:100%;
+    background:#2f4a3b;
+  }
+
+  .hud{
+    position:absolute;left:12px;right:12px;top:calc(12px + env(safe-area-inset-top));
+    display:flex;justify-content:space-between;gap:10px;pointer-events:none;
+  }
+  .hudCard{
+    background:rgba(20,31,25,.82);backdrop-filter:blur(8px);
+    border:1px solid rgba(255,255,255,.12);
+    border-radius:16px;padding:10px 12px;box-shadow:0 8px 18px rgba(0,0,0,.18);
+  }
+  #objective{max-width:68%;font-size:14px;line-height:1.25}
+  #objective b{display:block;color:#f3d986;font-size:13px;margin-bottom:2px}
+  #stats{font-size:13px;text-align:right;min-width:110px}
+  #stats strong{font-size:17px;color:#fff}
+
+  .dialogue{
+    position:absolute;left:12px;right:12px;bottom:calc(108px + env(safe-area-inset-bottom));
+    background:rgba(246,239,223,.97);color:#253229;border-radius:18px;
+    padding:14px 16px;border:3px solid #26372d;box-shadow:0 8px 22px rgba(0,0,0,.28);
+    display:none;
+  }
+  .dialogue.show{display:block}
+  .speaker{font-weight:900;font-size:17px;margin-bottom:4px}
+  .dialogueText{font-size:16px;line-height:1.35}
+  .dialogue button{
+    margin-top:10px;width:100%;border:0;border-radius:12px;padding:11px 14px;
+    background:#496b56;color:white;font-size:16px;font-weight:800;
+  }
+
+  .controls{
+    position:absolute;left:0;right:0;bottom:calc(12px + env(safe-area-inset-bottom));
+    display:flex;justify-content:space-between;align-items:flex-end;padding:0 18px;
+    pointer-events:none;
+  }
+  .joystick{
+    width:104px;height:104px;border-radius:50%;
+    background:rgba(30,45,37,.62);border:2px solid rgba(255,255,255,.18);
+    position:relative;pointer-events:auto;touch-action:none;
+  }
+  .stick{
+    width:50px;height:50px;border-radius:50%;background:rgba(245,240,225,.9);
+    position:absolute;left:27px;top:27px;box-shadow:0 4px 14px rgba(0,0,0,.28);
+  }
+  .actionStack{display:grid;gap:10px;pointer-events:auto}
+  .actionBtn{
+    min-width:104px;min-height:50px;border:0;border-radius:16px;
+    font-size:16px;font-weight:900;color:white;background:#526f5a;
+    box-shadow:0 5px 0 #31473a;
+  }
+  .actionBtn.secondary{background:#6f6048;box-shadow:0 5px 0 #4c402f}
+  .actionBtn:disabled{opacity:.42;box-shadow:none}
+
+  .titleCard{
+    position:absolute;inset:0;background:linear-gradient(rgba(20,31,25,.1),rgba(20,31,25,.55));
+    display:grid;place-items:center;padding:22px;
+  }
+  .titlePanel{
+    width:min(92vw,520px);background:rgba(246,239,223,.96);color:#223028;
+    border-radius:24px;padding:22px;border:4px solid #2b3c31;
+    box-shadow:0 14px 32px rgba(0,0,0,.3);text-align:center;
+  }
+  .titlePanel h1{font-size:36px;margin:0 0 8px}
+  .titlePanel p{margin:0 0 14px;line-height:1.4}
+  .titlePanel input{
+    width:100%;font-size:18px;padding:13px 14px;border-radius:12px;
+    border:1px solid #a7a89e;margin:8px 0 12px;
+  }
+  .titlePanel button{
+    width:100%;padding:13px 16px;border:0;border-radius:14px;
+    background:#486b52;color:white;font-size:18px;font-weight:900;
+  }
+  .hint{
+    position:absolute;left:50%;transform:translateX(-50%);bottom:calc(128px + env(safe-area-inset-bottom));
+    background:rgba(20,31,25,.82);padding:8px 12px;border-radius:999px;
+    font-size:13px;display:none;white-space:nowrap;
+  }
+  .hint.show{display:block}
 </style>
 </head>
 <body>
-<main class="wrap">
-<header>
-  <h1>Clan Survival</h1>
-  <div class="sub">Create your cat. Choose your clan. Survive together.</div>
-</header>
+<div id="gameWrap">
+  <canvas id="game"></canvas>
 
-<section id="setup" class="card">
-  <div class="stage">
-    <div id="tag" class="tag">Brave</div>
-    <div id="cat" class="cat brave">
-      <div class="fur tail"></div><div class="fur body"></div><div class="chest"></div>
-      <div class="fur ear l"></div><div class="fur ear r"></div><div class="fur head"></div>
-      <div class="forehead"></div><div class="stripe"></div><div class="stripe two"></div>
-      <div class="eye l"></div><div class="eye r"></div>
-      <div class="pupil l"></div><div class="pupil r"></div>
-      <div class="nose"></div><div class="mouth"></div>
+  <div class="hud">
+    <div id="objective" class="hudCard">
+      <b>OBJECTIVE</b>
+      Talk to Mossheart, the camp leader.
+    </div>
+    <div id="stats" class="hudCard">
+      <strong id="playerName">Rayapaw</strong><br>
+      Prey: <span id="preyCount">0</span>/2
     </div>
   </div>
 
-  <label for="name">Warrior name</label>
-  <input id="name" value="Rayapaw" maxlength="20" autocomplete="off">
+  <div id="hint" class="hint">Approach a cat or object</div>
 
-  <label>Personality</label>
-  <div class="segment" id="personalities">
-    <button class="choice selected" type="button" data-value="brave">Brave</button>
-    <button class="choice" type="button" data-value="clever">Clever</button>
-    <button class="choice" type="button" data-value="kind">Kind</button>
-    <button class="choice" type="button" data-value="curious">Curious</button>
-    <button class="choice" type="button" data-value="loyal">Loyal</button>
-    <button class="choice" type="button" data-value="funny">Funny</button>
+  <div id="dialogue" class="dialogue">
+    <div id="speaker" class="speaker"></div>
+    <div id="dialogueText" class="dialogueText"></div>
+    <button id="dialogueBtn" type="button">Continue</button>
   </div>
 
-  <label>Fur color</label>
-  <div class="swatches" id="furChoices">
-    <button class="swatch selected" type="button" data-value="#8c6b56" aria-label="Brown"><span style="background:#8c6b56"></span></button>
-    <button class="swatch" type="button" data-value="#d48245" aria-label="Ginger"><span style="background:#d48245"></span></button>
-    <button class="swatch" type="button" data-value="#d1c0a2" aria-label="Cream"><span style="background:#d1c0a2"></span></button>
-    <button class="swatch" type="button" data-value="#343739" aria-label="Black"><span style="background:#343739"></span></button>
-    <button class="swatch" type="button" data-value="#9b9b93" aria-label="Gray"><span style="background:#9b9b93"></span></button>
+  <div class="controls">
+    <div id="joystick" class="joystick" aria-label="Movement joystick">
+      <div id="stick" class="stick"></div>
+    </div>
+    <div class="actionStack">
+      <button id="interactBtn" class="actionBtn" type="button" disabled>Interact</button>
+      <button id="pounceBtn" class="actionBtn secondary" type="button" disabled>Pounce</button>
+    </div>
   </div>
 
-  <label>Markings</label>
-  <div class="segment" id="markChoices">
-    <button class="choice selected" type="button" data-value="white">White chest</button>
-    <button class="choice" type="button" data-value="gold">Golden chest</button>
-    <button class="choice" type="button" data-value="dark">Dark chest</button>
-    <button class="choice" type="button" data-value="forehead">White forehead</button>
-    <button class="choice" type="button" data-value="tabby">Tabby</button>
-    <button class="choice" type="button" data-value="none">None</button>
+  <div id="titleCard" class="titleCard">
+    <div class="titlePanel">
+      <h1>Clan Survival</h1>
+      <p>Explore the camp, meet your clan, and survive together.</p>
+      <input id="nameInput" value="Rayapaw" maxlength="20" aria-label="Cat name">
+      <button id="startBtn" type="button">Enter the camp</button>
+    </div>
   </div>
-
-  <label>Eye color</label>
-  <div class="swatches" id="eyeChoices">
-    <button class="swatch selected" type="button" data-value="#4c733f" aria-label="Green"><span style="background:#4c733f"></span></button>
-    <button class="swatch" type="button" data-value="#d1a33b" aria-label="Amber"><span style="background:#d1a33b"></span></button>
-    <button class="swatch" type="button" data-value="#4f7fa5" aria-label="Blue"><span style="background:#4f7fa5"></span></button>
-    <button class="swatch" type="button" data-value="#8d6e3f" aria-label="Hazel"><span style="background:#8d6e3f"></span></button>
-  </div>
-
-  <h2>Choose your clan</h2>
-  <div class="clans">
-    <button type="button" class="clan selected" data-clan="Wind"><strong>Wind 🌾</strong><small>Fast, open-moor hunters.</small></button>
-    <button type="button" class="clan" data-clan="Thunder"><strong>Thunder 🌳</strong><small>Bold forest defenders.</small></button>
-    <button type="button" class="clan" data-clan="Shadow"><strong>Shadow 🌙</strong><small>Quiet, clever night stalkers.</small></button>
-    <button type="button" class="clan" data-clan="River"><strong>River 💧</strong><small>Strong swimmers and fishers.</small></button>
-  </div>
-  <div class="picked">Selected clan: <span id="picked">Wind</span> Clan</div>
-  <button type="button" id="enter" class="primary">Enter the forest</button>
-</section>
-
-<section id="game" class="card hidden">
-  <div class="gamehead">
-    <div><h2 id="welcome">Welcome!</h2><div id="identity"></div></div>
-    <div class="pill">Week <span id="week">1</span></div>
-  </div>
-
-  <div class="stats">
-    <div class="stat">Hunt<b id="huntStat">1</b></div>
-    <div class="stat">Defense<b id="defStat">1</b></div>
-    <div class="stat">Trust<b id="trustStat">1</b></div>
-  </div>
-  <div class="xp"><div class="xpfill" id="xpfill"></div></div>
-  <div class="small"><span id="xptext">0</span> / 100 XP to Warrior</div>
-
-  <p class="order"><b>Leader's order:</b> Bring back food for the clan before sunset.</p>
-  <div id="story" class="story">Morning light reaches camp. Your clan is counting on you. What will you do?</div>
-
-  <div class="actions">
-    <button class="action" type="button" data-action="hunt">🐾 Hunt for food</button>
-    <button class="action" type="button" data-action="train">🌿 Train with a clanmate</button>
-    <button class="action" type="button" data-action="patrol">🛡️ Patrol the border</button>
-    <button class="action" type="button" data-action="order">⭐ Follow the leader's order</button>
-  </div>
-  <button id="nextWeek" class="secondary" type="button">Finish week</button>
-  <button id="back" class="secondary" type="button">Back to cat creator</button>
-</section>
-</main>
+</div>
 
 <script>
-(function(){
-  const $ = id => document.getElementById(id);
-  const state = {clan:'Wind', personality:'brave', fur:'#8c6b56', mark:'white', eye:'#4c733f', xp:0, hunt:1, defense:1, trust:1, week:1};
-  const cat = $('cat'), tag = $('tag');
+(() => {
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d');
+  const wrap = document.getElementById('gameWrap');
+  const interactBtn = document.getElementById('interactBtn');
+  const pounceBtn = document.getElementById('pounceBtn');
+  const objective = document.getElementById('objective');
+  const preyCountEl = document.getElementById('preyCount');
+  const dialogue = document.getElementById('dialogue');
+  const speakerEl = document.getElementById('speaker');
+  const dialogueTextEl = document.getElementById('dialogueText');
+  const dialogueBtn = document.getElementById('dialogueBtn');
+  const titleCard = document.getElementById('titleCard');
+  const startBtn = document.getElementById('startBtn');
+  const nameInput = document.getElementById('nameInput');
+  const playerName = document.getElementById('playerName');
 
-  function titleCase(s){return s.charAt(0).toUpperCase()+s.slice(1)}
+  let DPR = Math.min(window.devicePixelRatio || 1, 2);
+  let W = 0, H = 0;
 
-  function applyCat(){
-    cat.className = 'cat ' + state.personality;
-    tag.textContent = titleCase(state.personality);
-    document.documentElement.style.setProperty('--fur',state.fur);
-    document.documentElement.style.setProperty('--eye',state.eye);
-
-    const chest = document.querySelector('.chest');
-    const fore = document.querySelector('.forehead');
-    const stripes = document.querySelectorAll('.stripe');
-    chest.style.opacity='0'; fore.style.opacity='0'; stripes.forEach(s=>s.style.opacity='0');
-
-    let c='#f0eee7';
-    if(state.mark==='white'){c='#f0eee7';chest.style.opacity='1'}
-    if(state.mark==='gold'){c='#c8a879';chest.style.opacity='1'}
-    if(state.mark==='dark'){c='#5a4338';chest.style.opacity='1'}
-    if(state.mark==='forehead'){c='#f0eee7';fore.style.opacity='1'}
-    if(state.mark==='tabby'){stripes.forEach(s=>s.style.opacity='1')}
-    document.documentElement.style.setProperty('--mark',c);
+  function resize(){
+    W = wrap.clientWidth;
+    H = wrap.clientHeight;
+    canvas.width = Math.floor(W * DPR);
+    canvas.height = Math.floor(H * DPR);
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
+    ctx.setTransform(DPR,0,0,DPR,0,0);
   }
+  window.addEventListener('resize', resize);
+  resize();
 
-  function bindChoice(containerId,key){
-    document.querySelectorAll('#'+containerId+' button').forEach(btn=>{
-      btn.addEventListener('click',function(){
-        document.querySelectorAll('#'+containerId+' button').forEach(x=>x.classList.remove('selected'));
-        this.classList.add('selected');
-        state[key]=this.dataset.value;
-        applyCat();
+  const world = {w:1800,h:1300,zone:'camp'};
+  const player = {x:900,y:700,r:18,speed:180,name:'Rayapaw',prey:0,quest:false,completed:false};
+  let cam = {x:0,y:0};
+  let move = {x:0,y:0};
+  let last = performance.now();
+  let activeTarget = null;
+  let dialogueQueue = [];
+  let dialogueAction = null;
+  let inDialogue = false;
+
+  const campNPCs = [
+    {id:'leader',name:'Mossheart',x:900,y:420,color:'#b7774e',role:'Leader',mood:'calm'},
+    {id:'healer',name:'Dappleleaf',x:620,y:590,color:'#ded2ba',role:'Healer',mood:'kind'},
+    {id:'warrior',name:'Ashstep',x:1150,y:650,color:'#687078',role:'Warrior',mood:'serious'},
+    {id:'apprentice',name:'Pipaw',x:760,y:840,color:'#d4a66d',role:'Apprentice',mood:'excited'}
+  ];
+
+  const forestPrey = [
+    {id:1,x:520,y:390,caught:false,phase:0},
+    {id:2,x:960,y:610,caught:false,phase:1.7},
+    {id:3,x:1320,y:850,caught:false,phase:3.1}
+  ];
+
+  const trees = [];
+  function makeTrees(){
+    trees.length = 0;
+    for(let i=0;i<46;i++){
+      const angle = i * 0.62;
+      const radius = 440 + (i%7)*38;
+      trees.push({
+        x:900 + Math.cos(angle)*radius + ((i%3)-1)*45,
+        y:650 + Math.sin(angle)*radius*0.74 + ((i%5)-2)*22,
+        s:0.8 + (i%4)*0.12
       });
-    });
+    }
+  }
+  makeTrees();
+
+  function drawBackground(){
+    if(world.zone==='camp'){
+      ctx.fillStyle='#496b53';ctx.fillRect(0,0,W,H);
+      drawWorldCircle(900,650,480,'#6f8f65');
+      drawWorldCircle(900,650,370,'#789b6d');
+      drawPath(900,650,900,1100,120,'#b8a27d');
+      drawPath(900,650,1280,900,90,'#b8a27d');
+      drawDen(900,300,170,100,'Leader den');
+      drawDen(540,520,150,90,'Healer den');
+      drawDen(1210,620,160,95,'Warriors');
+      drawDen(720,920,150,90,'Apprentices');
+      trees.forEach(t=>drawTree(t.x,t.y,t.s));
+      drawFreshKill(1030,820);
+      drawSign(900,1130,'Forest →');
+    }else{
+      ctx.fillStyle='#315240';ctx.fillRect(0,0,W,H);
+      for(let x=120;x<1700;x+=210){
+        for(let y=120;y<1250;y+=190){
+          if((x+y)%420!==0) drawTree(x+((y/190)%2)*70,y,1.05);
+        }
+      }
+      drawPath(120,1120,1680,180,110,'#8c7a5c');
+      drawSign(160,1120,'← Camp');
+      ctx.fillStyle='#6aa2b0';
+      ctx.fillRect(worldToScreenX(1380),worldToScreenY(160),220,860);
+    }
   }
 
-  bindChoice('personalities','personality');
-  bindChoice('furChoices','fur');
-  bindChoice('markChoices','mark');
-  bindChoice('eyeChoices','eye');
+  function worldToScreenX(x){return x-cam.x}
+  function worldToScreenY(y){return y-cam.y}
 
-  document.querySelectorAll('.clan').forEach(btn=>{
-    btn.addEventListener('click',function(){
-      document.querySelectorAll('.clan').forEach(x=>x.classList.remove('selected'));
-      this.classList.add('selected');
-      state.clan=this.dataset.clan;
-      $('picked').textContent=state.clan;
-    });
-  });
-
-  function refresh(){
-    $('huntStat').textContent=state.hunt;
-    $('defStat').textContent=state.defense;
-    $('trustStat').textContent=state.trust;
-    $('xptext').textContent=state.xp;
-    $('xpfill').style.width=Math.min(state.xp,100)+'%';
-    $('week').textContent=state.week;
+  function drawWorldCircle(x,y,r,color){
+    ctx.fillStyle=color;
+    ctx.beginPath();ctx.arc(worldToScreenX(x),worldToScreenY(y),r,0,Math.PI*2);ctx.fill();
   }
 
-  $('enter').addEventListener('click',function(){
-    const n=$('name').value.trim()||'Willowpaw';
-    state.name=n;
-    $('welcome').textContent='Welcome, '+n+'!';
-    $('identity').textContent=state.clan+' Clan • '+titleCase(state.personality);
-    $('setup').classList.add('hidden');
-    $('game').classList.remove('hidden');
-    window.scrollTo(0,0);
+  function drawPath(x1,y1,x2,y2,w,color){
+    ctx.strokeStyle=color;ctx.lineWidth=w;ctx.lineCap='round';
+    ctx.beginPath();ctx.moveTo(worldToScreenX(x1),worldToScreenY(y1));ctx.lineTo(worldToScreenX(x2),worldToScreenY(y2));ctx.stroke();
+  }
+
+  function drawTree(x,y,s=1){
+    const sx=worldToScreenX(x), sy=worldToScreenY(y);
+    if(sx<-80||sx>W+80||sy<-120||sy>H+120)return;
+    ctx.fillStyle='#5e4531';
+    ctx.fillRect(sx-8*s,sy+12*s,16*s,34*s);
+    ctx.fillStyle='#2f5a3f';
+    ctx.beginPath();ctx.arc(sx,sy,34*s,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#3f7150';
+    ctx.beginPath();ctx.arc(sx-20*s,sy+5*s,24*s,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc(sx+20*s,sy+5*s,24*s,0,Math.PI*2);ctx.fill();
+  }
+
+  function drawDen(x,y,w,h,label){
+    const sx=worldToScreenX(x),sy=worldToScreenY(y);
+    ctx.fillStyle='#5b4d3d';
+    ctx.beginPath();
+    ctx.ellipse(sx,sy,w/2,h/2,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#27352d';
+    ctx.beginPath();ctx.ellipse(sx,sy+12,w*.2,h*.27,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,.82)';
+    ctx.font='bold 12px -apple-system';ctx.textAlign='center';
+    ctx.fillText(label,sx,sy-h*.62);
+  }
+
+  function drawFreshKill(x,y){
+    const sx=worldToScreenX(x),sy=worldToScreenY(y);
+    ctx.fillStyle='#745b42';
+    ctx.beginPath();ctx.ellipse(sx,sy,44,24,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#d7c9a4';
+    ctx.beginPath();ctx.ellipse(sx-9,sy-3,12,7,0,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.ellipse(sx+12,sy+4,10,6,0,0,Math.PI*2);ctx.fill();
+  }
+
+  function drawSign(x,y,text){
+    const sx=worldToScreenX(x),sy=worldToScreenY(y);
+    ctx.fillStyle='#70563c';ctx.fillRect(sx-4,sy,8,34);
+    ctx.fillStyle='#d8c49c';ctx.fillRect(sx-55,sy-24,110,28);
+    ctx.fillStyle='#2b302a';ctx.font='bold 12px -apple-system';ctx.textAlign='center';
+    ctx.fillText(text,sx,sy-6);
+  }
+
+  function drawCat(x,y,color,name,isPlayer=false){
+    const sx=worldToScreenX(x),sy=worldToScreenY(y);
+    if(sx<-60||sx>W+60||sy<-60||sy>H+60)return;
+    ctx.save();
+    ctx.translate(sx,sy);
+    ctx.fillStyle='rgba(0,0,0,.16)';
+    ctx.beginPath();ctx.ellipse(0,17,24,8,0,0,Math.PI*2);ctx.fill();
+
+    ctx.fillStyle=color;
+    ctx.beginPath();ctx.ellipse(0,3,21,28,0,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc(0,-20,18,0,Math.PI*2);ctx.fill();
+
+    ctx.beginPath();ctx.moveTo(-13,-31);ctx.lineTo(-6,-45);ctx.lineTo(-1,-31);ctx.fill();
+    ctx.beginPath();ctx.moveTo(13,-31);ctx.lineTo(6,-45);ctx.lineTo(1,-31);ctx.fill();
+
+    ctx.strokeStyle=color;ctx.lineWidth=8;ctx.lineCap='round';
+    ctx.beginPath();ctx.moveTo(17,6);ctx.quadraticCurveTo(38,-8,30,-28);ctx.stroke();
+
+    ctx.fillStyle='#f2e6cc';
+    ctx.beginPath();ctx.ellipse(0,4,8,15,0,0,Math.PI*2);ctx.fill();
+
+    ctx.fillStyle=isPlayer?'#6fa7d2':'#a9d075';
+    ctx.beginPath();ctx.arc(-6,-21,3.3,0,Math.PI*2);ctx.arc(6,-21,3.3,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#111';
+    ctx.beginPath();ctx.arc(-6,-21,1.4,0,Math.PI*2);ctx.arc(6,-21,1.4,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#b56d6d';ctx.beginPath();ctx.arc(0,-15,2.3,0,Math.PI*2);ctx.fill();
+
+    ctx.fillStyle='rgba(255,255,255,.92)';
+    ctx.font='bold 12px -apple-system';ctx.textAlign='center';
+    ctx.fillText(name,0,-53);
+    ctx.restore();
+  }
+
+  function drawMouse(p){
+    const bob=Math.sin(performance.now()/350+p.phase)*3;
+    const sx=worldToScreenX(p.x),sy=worldToScreenY(p.y+bob);
+    if(sx<-40||sx>W+40||sy<-40||sy>H+40)return;
+    ctx.fillStyle='#9b8d7e';
+    ctx.beginPath();ctx.ellipse(sx,sy,10,7,0,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc(sx+8,sy-3,5,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle='#9b8d7e';ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(sx-9,sy);ctx.quadraticCurveTo(sx-22,sy-7,sx-27,sy+3);ctx.stroke();
+  }
+
+  function dist(a,b){return Math.hypot(a.x-b.x,a.y-b.y)}
+
+  function updateTarget(){
+    activeTarget=null;
+    let best=9999;
+
+    if(world.zone==='camp'){
+      campNPCs.forEach(n=>{
+        const d=dist(player,n);
+        if(d<70 && d<best){best=d;activeTarget={type:'npc',obj:n}}
+      });
+      const exit={x:900,y:1110};
+      const dExit=Math.hypot(player.x-exit.x,player.y-exit.y);
+      if(dExit<85 && dExit<best){best=dExit;activeTarget={type:'exit'}}
+
+      const pile={x:1030,y:820};
+      const dPile=Math.hypot(player.x-pile.x,player.y-pile.y);
+      if(dPile<85 && dPile<best && player.prey>0){best=dPile;activeTarget={type:'pile'}}
+    }else{
+      forestPrey.forEach(p=>{
+        if(p.caught)return;
+        const d=dist(player,p);
+        if(d<75 && d<best){best=d;activeTarget={type:'prey',obj:p}}
+      });
+      const campExit={x:160,y:1120};
+      const dCamp=Math.hypot(player.x-campExit.x,player.y-campExit.y);
+      if(dCamp<90 && dCamp<best){best=dCamp;activeTarget={type:'campExit'}}
+    }
+
+    interactBtn.disabled=!(activeTarget && activeTarget.type!=='prey');
+    pounceBtn.disabled=!(activeTarget && activeTarget.type==='prey');
+    interactBtn.textContent=activeTarget && activeTarget.type==='npc' ? 'Talk' :
+      activeTarget && activeTarget.type==='exit' ? 'Go to forest' :
+      activeTarget && activeTarget.type==='campExit' ? 'Return to camp' :
+      activeTarget && activeTarget.type==='pile' ? 'Drop prey' : 'Interact';
+  }
+
+  function setObjective(text){
+    objective.innerHTML='<b>OBJECTIVE</b>'+text;
+  }
+
+  function showDialogue(name,lines,onDone){
+    dialogueQueue=[...lines];
+    dialogueAction=onDone||null;
+    inDialogue=true;
+    speakerEl.textContent=name;
+    dialogue.classList.add('show');
+    nextDialogueLine();
+  }
+
+  function nextDialogueLine(){
+    if(dialogueQueue.length){
+      dialogueTextEl.textContent=dialogueQueue.shift();
+      dialogueBtn.textContent=dialogueQueue.length?'Continue':'Close';
+    }else{
+      dialogue.classList.remove('show');
+      inDialogue=false;
+      const fn=dialogueAction;dialogueAction=null;
+      if(fn)fn();
+    }
+  }
+  dialogueBtn.addEventListener('click',nextDialogueLine);
+
+  function handleInteract(){
+    if(!activeTarget || inDialogue)return;
+    if(activeTarget.type==='npc'){
+      const n=activeTarget.obj;
+      if(n.id==='leader'){
+        if(!player.quest){
+          showDialogue(n.name,[
+            `There you are, ${player.name}. The camp is running low on food.`,
+            'Head into the woods and bring back two pieces of prey before sunset.',
+            'Stay alert. The forest changes when you stop paying attention.'
+          ],()=>{
+            player.quest=true;
+            setObjective('Hunt 2 pieces of prey in the forest, then return them to camp.');
+          });
+        }else if(!player.completed){
+          showDialogue(n.name,[player.prey>=2?'You have enough prey. Put it on the fresh-kill pile.':'Keep going. The clan is counting on you.']);
+        }else{
+          showDialogue(n.name,['Good work. You fed the clan today. That is how trust is earned.']);
+        }
+      }else if(n.id==='healer'){
+        showDialogue(n.name,['You look healthy enough. Try not to prove me wrong.']);
+      }else if(n.id==='warrior'){
+        showDialogue(n.name,['Patrol the edges of camp sometime. Quiet feet notice more.']);
+      }else{
+        showDialogue(n.name,['I bet I could catch a mouse before you!']);
+      }
+    }else if(activeTarget.type==='exit'){
+      world.zone='forest';player.x=220;player.y=1080;setObjective(player.quest?'Find and catch 2 pieces of prey.':'Explore the forest.');
+    }else if(activeTarget.type==='campExit'){
+      world.zone='camp';player.x=900;player.y=1060;
+    }else if(activeTarget.type==='pile'){
+      if(player.prey>=2){
+        player.prey-=2;preyCountEl.textContent=player.prey;
+        player.completed=true;
+        setObjective('Mission complete! Talk to Mossheart.');
+        showDialogue('Camp',['You add the prey to the fresh-kill pile. Nearby cats gather gratefully.']);
+      }
+    }
+  }
+  interactBtn.addEventListener('click',handleInteract);
+
+  pounceBtn.addEventListener('click',()=>{
+    if(!activeTarget || activeTarget.type!=='prey' || inDialogue)return;
+    const p=activeTarget.obj;
+    if(Math.random()<0.78){
+      p.caught=true;player.prey++;
+      preyCountEl.textContent=player.prey;
+      showDialogue('Hunt',['You wait... then pounce! You caught the prey.']);
+      if(player.prey>=2)setObjective('Return to camp and place the prey on the fresh-kill pile.');
+    }else{
+      p.x+=90;p.y-=50;
+      showDialogue('Hunt',['Too soon! The mouse darts away. Get close and try again.']);
+    }
   });
 
-  const stories={
-    hunt:"You crouch low and listen. A rustle! You follow the sound and bring food back to camp. Hunting skill +1.",
-    train:"You practice stalking and quick turns with a clanmate. You miss once, try again, and improve.",
-    patrol:"You follow the border carefully and spot fresh tracks. You report them to the clan. Defense skill +1.",
-    order:"You put the clan's need first and complete the leader's task. Clan trust +1."
-  };
-
-  document.querySelectorAll('.action').forEach(btn=>{
-    btn.addEventListener('click',function(){
-      const a=this.dataset.action;
-      if(a==='hunt'){state.hunt++;state.xp+=20}
-      if(a==='train'){state.hunt++;state.defense++;state.xp+=18}
-      if(a==='patrol'){state.defense++;state.xp+=20}
-      if(a==='order'){state.trust++;state.xp+=25}
-      $('story').textContent=stories[a];
-      if(state.xp>=100){$('story').textContent += " You have enough XP to become a Warrior!"; state.xp=100}
-      refresh();
-    });
+  startBtn.addEventListener('click',()=>{
+    player.name=(nameInput.value.trim()||'Rayapaw').slice(0,20);
+    playerName.textContent=player.name;
+    titleCard.style.display='none';
+    showDialogue('Camp',['Morning light spills into the clearing. Cats are already moving between the dens.','Mossheart, the camp leader, is waiting near the leader den.']);
   });
 
-  $('nextWeek').addEventListener('click',function(){
-    state.week++;
-    $('story').textContent='A new week begins. The clan gathers to hear the leader’s next order.';
-    refresh();
-  });
+  const joystick=document.getElementById('joystick');
+  const stick=document.getElementById('stick');
+  let joyId=null,joyCenter={x:0,y:0};
 
-  $('back').addEventListener('click',function(){
-    $('game').classList.add('hidden');
-    $('setup').classList.remove('hidden');
-    window.scrollTo(0,0);
-  });
+  function joyStart(e){
+    const t=e.changedTouches?e.changedTouches[0]:e;
+    joyId=t.identifier??'mouse';
+    const r=joystick.getBoundingClientRect();
+    joyCenter={x:r.left+r.width/2,y:r.top+r.height/2};
+    joyMove(e);
+  }
+  function joyMove(e){
+    if(joyId===null)return;
+    let t;
+    if(e.changedTouches){
+      t=[...e.changedTouches].find(x=>x.identifier===joyId);
+      if(!t)return;
+    }else t=e;
+    let dx=t.clientX-joyCenter.x,dy=t.clientY-joyCenter.y;
+    const m=Math.hypot(dx,dy),max=34;
+    if(m>max){dx=dx/m*max;dy=dy/m*max}
+    stick.style.transform=`translate(${dx}px,${dy}px)`;
+    move.x=dx/max;move.y=dy/max;
+    e.preventDefault();
+  }
+  function joyEnd(e){
+    if(e.changedTouches){
+      const match=[...e.changedTouches].some(x=>x.identifier===joyId);
+      if(!match)return;
+    }
+    joyId=null;move.x=move.y=0;stick.style.transform='translate(0,0)';
+  }
 
-  applyCat(); refresh();
+  joystick.addEventListener('touchstart',joyStart,{passive:false});
+  joystick.addEventListener('touchmove',joyMove,{passive:false});
+  joystick.addEventListener('touchend',joyEnd,{passive:false});
+  joystick.addEventListener('mousedown',joyStart);
+  window.addEventListener('mousemove',e=>{if(joyId==='mouse')joyMove(e)});
+  window.addEventListener('mouseup',e=>{if(joyId==='mouse')joyEnd(e)});
+
+  function clampPlayer(){
+    player.x=Math.max(45,Math.min(world.w-45,player.x));
+    player.y=Math.max(45,Math.min(world.h-45,player.y));
+    if(world.zone==='camp'){
+      const dx=player.x-900,dy=player.y-650;
+      const d=Math.hypot(dx,dy);
+      if(d>535){
+        player.x=900+dx/d*535;player.y=650+dy/d*535;
+      }
+    }
+  }
+
+  function update(dt){
+    if(!inDialogue && titleCard.style.display==='none'){
+      const len=Math.hypot(move.x,move.y)||1;
+      player.x += (move.x/len)*player.speed*dt;
+      player.y += (move.y/len)*player.speed*dt;
+      clampPlayer();
+    }
+    cam.x += ((player.x-W/2)-cam.x)*Math.min(1,dt*7);
+    cam.y += ((player.y-H/2)-cam.y)*Math.min(1,dt*7);
+    cam.x=Math.max(0,Math.min(world.w-W,cam.x));
+    cam.y=Math.max(0,Math.min(world.h-H,cam.y));
+    updateTarget();
+  }
+
+  function render(){
+    drawBackground();
+    if(world.zone==='camp'){
+      campNPCs.forEach(n=>drawCat(n.x,n.y,n.color,n.name,false));
+    }else{
+      forestPrey.forEach(p=>{if(!p.caught)drawMouse(p)});
+    }
+    drawCat(player.x,player.y,'#c9784e',player.name,true);
+  }
+
+  function loop(now){
+    const dt=Math.min((now-last)/1000,.035);last=now;
+    update(dt);render();
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
 })();
 </script>
 </body>
