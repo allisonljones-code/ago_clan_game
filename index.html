@@ -210,39 +210,138 @@ function sx(x){return x-cam.x}function sy(y){return y-cam.y}
 function tree(x,y,s=1){let X=sx(x),Y=sy(y);ctx.fillStyle='#604834';ctx.fillRect(X-7*s,Y+8*s,14*s,34*s);ctx.fillStyle='#315b40';ctx.beginPath();ctx.arc(X,Y,30*s,0,7);ctx.fill();ctx.fillStyle='#437251';ctx.beginPath();ctx.arc(X-17*s,Y+4*s,20*s,0,7);ctx.fill();ctx.beginPath();ctx.arc(X+17*s,Y+4*s,20*s,0,7);ctx.fill()}
 function den(x,y,w,h,label){let X=sx(x),Y=sy(y);ctx.fillStyle='#5c4d3c';ctx.beginPath();ctx.ellipse(X,Y,w/2,h/2,0,0,7);ctx.fill();ctx.fillStyle='#27352d';ctx.beginPath();ctx.ellipse(X,Y+10,w*.19,h*.25,0,0,7);ctx.fill();ctx.fillStyle='#fffddd';ctx.font='bold 11px -apple-system';ctx.textAlign='center';ctx.fillText(label,X,Y-h*.62)}
 function animal(c,isPlayer=false){
- let X=sx(c.x),Y=sy(c.y);ctx.save();ctx.translate(X,Y);
- ctx.fillStyle='#0003';ctx.beginPath();ctx.ellipse(0,14,isPlayer?18:23,7,0,0,7);ctx.fill();
- let scale=isPlayer?.72:1;ctx.scale(scale,scale);
- let species=c.species||player.species;
- ctx.fillStyle=c.color||player.fur;
+ let X=sx(c.x),Y=sy(c.y);
+ ctx.save();ctx.translate(X,Y);
+
+ const species=c.species||player.species;
+ const bodyColor=c.color||player.fur;
+ const eyeColor=c.eye||player.eye;
+ const scale=isPlayer?.78:1;
+
+ ctx.fillStyle='#0003';
+ ctx.beginPath();
+ ctx.ellipse(0,18,species==='wolf'?(isPlayer?22:30):(isPlayer?18:23),7,0,0,7);
+ ctx.fill();
+
+ ctx.scale(scale,scale);
+
  if(species==='wolf'){
-   ctx.beginPath();ctx.ellipse(0,3,24,22,0,0,7);ctx.fill();
-   ctx.beginPath();ctx.arc(0,-18,19,0,7);ctx.fill();
-   // longer wolf muzzle
-   ctx.beginPath();ctx.ellipse(0,-10,11,8,0,0,7);ctx.fill();
-   // taller pointed ears
-   ctx.beginPath();ctx.moveTo(-14,-31);ctx.lineTo(-10,-49);ctx.lineTo(-2,-31);ctx.fill();
-   ctx.beginPath();ctx.moveTo(14,-31);ctx.lineTo(10,-49);ctx.lineTo(2,-31);ctx.fill();
+   // WOLF: long horizontal body, four legs, longer muzzle, large ears, bushy tail.
+   ctx.fillStyle=bodyColor;
+
+   // torso
+   ctx.beginPath();
+   ctx.ellipse(0,2,31,19,0,0,Math.PI*2);
+   ctx.fill();
+
+   // chest / neck
+   ctx.beginPath();
+   ctx.ellipse(-19,-9,15,20,-.2,0,Math.PI*2);
+   ctx.fill();
+
+   // head
+   ctx.beginPath();
+   ctx.arc(-23,-28,17,0,Math.PI*2);
+   ctx.fill();
+
+   // muzzle
+   ctx.beginPath();
+   ctx.ellipse(-34,-23,14,8,-.05,0,Math.PI*2);
+   ctx.fill();
+
+   // ears
+   ctx.beginPath();
+   ctx.moveTo(-35,-39);ctx.lineTo(-31,-57);ctx.lineTo(-22,-40);ctx.fill();
+   ctx.beginPath();
+   ctx.moveTo(-18,-41);ctx.lineTo(-11,-56);ctx.lineTo(-8,-37);ctx.fill();
+
    // legs
-   ctx.fillRect(-15,16,7,18);ctx.fillRect(8,16,7,18);
-   ctx.strokeStyle=c.color||player.fur;ctx.lineWidth=8;ctx.lineCap='round';
-   ctx.beginPath();ctx.moveTo(20,4);ctx.quadraticCurveTo(38,1,43,15);ctx.stroke();
+   const legs=[[-18,13],[-5,14],[13,13],[24,11]];
+   legs.forEach(([lx,ly])=>{
+     ctx.fillRect(lx,ly,7,22);
+     ctx.beginPath();ctx.ellipse(lx+3.5,35,6,3,0,0,Math.PI*2);ctx.fill();
+   });
+
+   // tail: thicker, bushier, held outward
+   ctx.strokeStyle=bodyColor;
+   ctx.lineWidth=13;
+   ctx.lineCap='round';
+   ctx.beginPath();
+   ctx.moveTo(28,0);
+   ctx.quadraticCurveTo(48,-7,53,10);
+   ctx.stroke();
+
+   // chest marking
+   let mark=c.mark||player.mark;
+   if(mark==='chest'){
+     ctx.fillStyle='#f3e9d7';
+     ctx.beginPath();ctx.ellipse(-20,-6,8,13,-.2,0,Math.PI*2);ctx.fill();
+   }
+   if(mark==='patch'){
+     ctx.fillStyle='#f3e9d7';
+     ctx.beginPath();ctx.ellipse(-29,-29,7,8,.25,0,Math.PI*2);ctx.fill();
+   }
+   if(mark==='stripe'){
+     ctx.strokeStyle='#473a31';ctx.lineWidth=3;
+     [-30,-24,-18].forEach(x=>{
+       ctx.beginPath();ctx.moveTo(x,-42);ctx.lineTo(x-2,-35);ctx.stroke();
+     });
+   }
+
+   // eyes
+   ctx.fillStyle=eyeColor;
+   ctx.beginPath();ctx.arc(-29,-29,3,0,Math.PI*2);ctx.arc(-19,-29,3,0,Math.PI*2);ctx.fill();
+   ctx.fillStyle='#111';
+   ctx.beginPath();ctx.arc(-29,-29,1.2,0,Math.PI*2);ctx.arc(-19,-29,1.2,0,Math.PI*2);ctx.fill();
+
+   // nose
+   ctx.fillStyle='#222';
+   ctx.beginPath();ctx.arc(-46,-23,3,0,Math.PI*2);ctx.fill();
+
+   // name
+   ctx.fillStyle='#fff';
+   ctx.font='bold 12px -apple-system';
+   ctx.textAlign='center';
+   ctx.fillText(c.name||player.name,-10,-65);
+
  }else{
-   ctx.beginPath();ctx.ellipse(0,2,20,27,0,0,7);ctx.fill();
-   ctx.beginPath();ctx.arc(0,-20,18,0,7);ctx.fill();
+   // WILDCAT: upright compact body, rounder head, cat tail.
+   ctx.fillStyle=bodyColor;
+   ctx.beginPath();ctx.ellipse(0,2,20,27,0,0,Math.PI*2);ctx.fill();
+   ctx.beginPath();ctx.arc(0,-20,18,0,Math.PI*2);ctx.fill();
+
    ctx.beginPath();ctx.moveTo(-13,-31);ctx.lineTo(-6,-45);ctx.lineTo(-1,-31);ctx.fill();
    ctx.beginPath();ctx.moveTo(13,-31);ctx.lineTo(6,-45);ctx.lineTo(1,-31);ctx.fill();
-   ctx.strokeStyle=c.color||player.fur;ctx.lineWidth=7;ctx.lineCap='round';
+
+   ctx.strokeStyle=bodyColor;ctx.lineWidth=7;ctx.lineCap='round';
    ctx.beginPath();ctx.moveTo(16,7);ctx.quadraticCurveTo(37,-7,30,-27);ctx.stroke();
+
+   let mark=c.mark||player.mark;
+   if(mark==='stripe'){
+     ctx.strokeStyle='#473a31';ctx.lineWidth=3;
+     [-6,0,6].forEach(x=>{ctx.beginPath();ctx.moveTo(x,-36);ctx.lineTo(x-2,-29);ctx.stroke()})
+   }
+   if(mark==='patch'){
+     ctx.fillStyle='#f3e9d7';ctx.beginPath();ctx.ellipse(7,-25,7,9,.3,0,Math.PI*2);ctx.fill()
+   }
+   if(mark==='chest'){
+     ctx.fillStyle='#f3e9d7';ctx.beginPath();ctx.ellipse(0,4,8,14,0,0,Math.PI*2);ctx.fill()
+   }
+
+   ctx.fillStyle=eyeColor;
+   ctx.beginPath();ctx.arc(-6,-21,3,0,Math.PI*2);ctx.arc(6,-21,3,0,Math.PI*2);ctx.fill();
+   ctx.fillStyle='#111';
+   ctx.beginPath();ctx.arc(-6,-21,1.2,0,Math.PI*2);ctx.arc(6,-21,1.2,0,Math.PI*2);ctx.fill();
+   ctx.fillStyle='#b66d6d';
+   ctx.beginPath();ctx.arc(0,-15,2,0,Math.PI*2);ctx.fill();
+
+   ctx.fillStyle='#fff';
+   ctx.font='bold 12px -apple-system';
+   ctx.textAlign='center';
+   ctx.fillText(c.name||player.name,0,-52);
  }
- let mark=c.mark||player.mark;
- if(mark==='stripe'){ctx.strokeStyle='#473a31';ctx.lineWidth=3;[-6,0,6].forEach(v=>{ctx.beginPath();ctx.moveTo(v,-36);ctx.lineTo(v-2,-29);ctx.stroke()})}
- if(mark==='patch'){ctx.fillStyle='#f3e9d7';ctx.beginPath();ctx.ellipse(7,-25,7,9,.3,0,7);ctx.fill()}
- if(mark==='chest'){ctx.fillStyle='#f3e9d7';ctx.beginPath();ctx.ellipse(0,4,8,14,0,0,7);ctx.fill()}
- ctx.fillStyle=c.eye||player.eye;ctx.beginPath();ctx.arc(-6,-21,3,0,7);ctx.arc(6,-21,3,0,7);ctx.fill();
- ctx.fillStyle='#111';ctx.beginPath();ctx.arc(-6,-21,1.2,0,7);ctx.arc(6,-21,1.2,0,7);ctx.fill();
- ctx.fillStyle='#b66d6d';ctx.beginPath();ctx.arc(0,-15,2,0,7);ctx.fill();
- ctx.fillStyle='#fff';ctx.font='bold 12px -apple-system';ctx.textAlign='center';ctx.fillText(c.name||player.name,0,-52);ctx.restore()
+
+ ctx.restore();
 }
 function background(){ctx.fillStyle='#4d7255';ctx.fillRect(0,0,W,H);ctx.fillStyle='#789a6c';ctx.beginPath();ctx.arc(sx(900),sy(650),480,0,7);ctx.fill();ctx.strokeStyle='#b8a27d';ctx.lineWidth=100;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(sx(900),sy(650));ctx.lineTo(sx(900),sy(1100));ctx.stroke();den(850,760,230,145,player.species==='wolf'?'Pup Den':'Nursery');den(900,275,170,100,player.species==='wolf'?'Pack Elder den':'Colony Elder den');den(540,520,150,90,player.species==='wolf'?'Herb Hollow':'Healer den');den(1210,620,160,95,player.species==='wolf'?'Hunters':'Hunters');for(let i=0;i<34;i++){let a=i*.75,r=460+(i%5)*40;tree(900+Math.cos(a)*r,650+Math.sin(a)*r*.75,.85+(i%3)*.12)}
 ctx.fillStyle='#78a9bd';ctx.beginPath();ctx.ellipse(sx(640),sy(390),70,38,0,0,7);ctx.fill();
@@ -345,17 +444,42 @@ $('mapBtn').onclick=()=>{
 };
 document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>$(b.dataset.close).classList.remove('show'));
 
-$('species').onchange=()=>{
+function syncSpeciesUI(){
  const wolf=$('species').value==='wolf';
+
  $('speciesPreview').textContent=wolf?'🐺':'🐱';
- $('birthText').textContent=wolf?'You were just born into a wolf pack. Create your pup.':'You were just born into a wildcat colony. Create your kit.';
- $('homeGroup').innerHTML=wolf?'<option value="Stonepine Pack">Stonepine Pack</option><option value="Rivertrail Pack">Rivertrail Pack</option>':'<option value="Moonfall Colony">Moonfall Colony</option><option value="Pinewatch Colony">Pinewatch Colony</option>';
+ if(wolf && $('fur').value==='#c9784e') $('fur').value='#60666b';
+ $('birthText').textContent=wolf
+   ?'You were just born into a wolf pack. Create your pup.'
+   :'You were just born into a wildcat colony. Create your kit.';
+
+ const currentHome=$('homeGroup').value;
+ const wolfHomes=['Stonepine Pack','Rivertrail Pack'];
+ const wildcatHomes=['Moonfall Colony','Pinewatch Colony'];
+
+ $('homeGroup').innerHTML=wolf
+   ?'<option value="Stonepine Pack">Stonepine Pack</option><option value="Rivertrail Pack">Rivertrail Pack</option>'
+   :'<option value="Moonfall Colony">Moonfall Colony</option><option value="Pinewatch Colony">Pinewatch Colony</option>';
+
+ if(wolf && wolfHomes.includes(currentHome)) $('homeGroup').value=currentHome;
+ if(!wolf && wildcatHomes.includes(currentHome)) $('homeGroup').value=currentHome;
+
  if($('skill1Label'))$('skill1Label').textContent=wolf?'Tracking':'Pouncing';
  if($('skill2Label'))$('skill2Label').textContent=wolf?'Scenting':'Stealth';
  if($('skill3Label'))$('skill3Label').textContent='Fighting';
  if($('skill4Label'))$('skill4Label').textContent=wolf?'Pack Bond':'Social';
-};
+
+ $('ageText').textContent=wolf?'Young Pup • Day 1':'Young Kit • Day 1';
+ $('objective').innerHTML=wolf?'<b>FIRST LIGHT</b>Wake up and find Nightwind.':'<b>FIRST LIGHT</b>Wake up and find Nightpelt.';
+}
+
+$('species').addEventListener('change',syncSpeciesUI);
+$('species').addEventListener('input',syncSpeciesUI);
+window.addEventListener('pageshow',()=>setTimeout(syncSpeciesUI,0));
 $('startBtn').onclick=()=>{
+ // Force all dependent fields to match the selected species before starting.
+ syncSpeciesUI();
+
  player.name=$('nameInput').value.trim()||'Raya';
  player.species=$('species').value;
  player.personality=$('personality').value;
@@ -363,15 +487,32 @@ $('startBtn').onclick=()=>{
  player.eye=$('eyes').value;
  player.mark=$('mark').value;
  player.homeGroup=$('homeGroup').value;
+
+ if(player.species==='wolf' && !player.homeGroup.includes('Pack')) player.homeGroup='Stonepine Pack';
+ if(player.species==='wildcat' && !player.homeGroup.includes('Colony')) player.homeGroup='Moonfall Colony';
+
  player.memories=[`🌅 Born into ${player.homeGroup}`];
  setNPCSpecies();
+ $('objective').innerHTML=player.species==='wolf'
+   ?'<b>FIRST LIGHT</b>Wake up and find Nightwind.'
+   :'<b>FIRST LIGHT</b>Wake up and find Nightpelt.';
+ $('ageText').textContent=player.species==='wolf'?'Young Pup • Day 1':'Young Kit • Day 1';
  $('start').style.display='none';started=true;
+
  const young=player.species==='wolf'?'pup':'kit';
  const society=player.species==='wolf'?'pack':'colony';
  const mother=cats.find(c=>c.id==='mother');
- dialogue(mother.name,[`Wake up, little ${player.name}.`,`I'm ${mother.name}. I'm your mother. The nursery is your whole world for now — but it won't stay that way forever.`,`You belong to a ${society}. Stay close, young ${young}.`],()=>{$('objective').innerHTML=`<b>FIRST LIGHT</b>Walk to ${mother.name} and talk to her. Tap ❓ anytime for help.`})
+
+ dialogue(mother.name,[
+   `Wake up, little ${player.name}.`,
+   `I'm ${mother.name}. I'm your mother. The ${player.species==='wolf'?'pup den':'nursery'} is your whole world for now — but it won't stay that way forever.`,
+   `You belong to a ${society}. Stay close, young ${young}.`
+ ],()=>{$('objective').innerHTML=`<b>FIRST LIGHT</b>Walk to ${mother.name} and talk to her. Tap ❓ anytime for help.`})
 };
-$('species').onchange();
+
+// Run once now, and again just after load so restored iPhone/Safari form state is caught.
+syncSpeciesUI();
+setTimeout(syncSpeciesUI,50);
 
 const joy=$('joystick'),stick=$('stick');let joyId=null,center={x:0,y:0};
 function jstart(e){let t=e.changedTouches?e.changedTouches[0]:e;joyId=t.identifier??'m';let r=joy.getBoundingClientRect();center={x:r.left+r.width/2,y:r.top+r.height/2};jmove(e)}
