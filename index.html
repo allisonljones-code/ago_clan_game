@@ -203,6 +203,7 @@ function setNPCSpecies(){
  rel.warrior.history=[`⚔️ ${cats.find(c=>c.id==='warrior').name} is one of the hunters.`];
  rel.healer.history=[`🌿 ${cats.find(c=>c.id==='healer').name} is the healer.`];
 }
+setNPCSpecies();
 
 
 function sx(x){return x-cam.x}function sy(y){return y-cam.y}
@@ -303,7 +304,7 @@ function talk(c){let r=rel[c.id];r.talks++;r.trust=Math.min(100,r.trust+2);playe
 function playPounce(c){player.skills.pounce++;player.energy=Math.max(0,player.energy-5);rel[c.id].bond=Math.min(100,rel[c.id].bond+3);rel[c.id].history.push(`🐾 Practiced pouncing together on Day ${player.day}.`);dialogue('Play Pounce',[`You crouch... wiggle... POUNCE! ${c.name} tumbles into the moss.`,`Pouncing +1`])}
 function playFight(c){player.skills.fight++;player.energy=Math.max(0,player.energy-7);rel[c.id].fights++;rel[c.id].bond=Math.min(100,rel[c.id].bond+2);rel[c.id].history.push(`⚔️ Play-fought on Day ${player.day}.`);dialogue('Play Fight',[`You and ${c.name} wrestle until one of you rolls into the grass.`,`Fighting +1`])}
 function stalk(c){player.skills.stealth++;player.energy=Math.max(0,player.energy-4);rel[c.id].history.push(`👀 Practiced stalking on Day ${player.day}.`);dialogue('Stalk',[`You flatten yourself into the grass and creep toward ${c.name}.`,`Stealth +1`])}
-function eat(){player.hunger=Math.min(100,player.hunger+35);dialogue('Eat',[`${cats.find(c=>c.id==='mother').name} nudges a little food toward you. Your belly feels full.`])} nudges a little food toward you. Your belly feels full.'])}
+function eat(){player.hunger=Math.min(100,player.hunger+35);dialogue('Eat',[`${cats.find(c=>c.id==='mother').name} nudges a little food toward you. Your belly feels full.`])}
 function sleep(){
  player.energy=100;
  player.hunger=Math.max(30,player.hunger-15);
@@ -349,10 +350,10 @@ $('species').onchange=()=>{
  $('speciesPreview').textContent=wolf?'🐺':'🐱';
  $('birthText').textContent=wolf?'You were just born into a wolf pack. Create your pup.':'You were just born into a wildcat colony. Create your kit.';
  $('homeGroup').innerHTML=wolf?'<option value="Stonepine Pack">Stonepine Pack</option><option value="Rivertrail Pack">Rivertrail Pack</option>':'<option value="Moonfall Colony">Moonfall Colony</option><option value="Pinewatch Colony">Pinewatch Colony</option>';
- $('skill1Label').textContent=wolf?'Tracking':'Pouncing';
- $('skill2Label').textContent=wolf?'Scenting':'Stealth';
- $('skill3Label').textContent='Fighting';
- $('skill4Label').textContent=wolf?'Pack Bond':'Social';
+ if($('skill1Label'))$('skill1Label').textContent=wolf?'Tracking':'Pouncing';
+ if($('skill2Label'))$('skill2Label').textContent=wolf?'Scenting':'Stealth';
+ if($('skill3Label'))$('skill3Label').textContent='Fighting';
+ if($('skill4Label'))$('skill4Label').textContent=wolf?'Pack Bond':'Social';
 };
 $('startBtn').onclick=()=>{
  player.name=$('nameInput').value.trim()||'Raya';
