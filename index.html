@@ -43,9 +43,19 @@ canvas{display:block;width:100%;height:100%;background:#2f4a3b}
 .stick{width:50px;height:50px;border-radius:50%;background:rgba(245,240,225,.92);position:absolute;left:27px;top:27px;box-shadow:0 4px 14px rgba(0,0,0,.28)}
 
 .interactionHub{position:absolute;right:14px;top:46%;transform:translateY(-50%);z-index:14;display:flex;flex-direction:column;align-items:flex-end;gap:10px;pointer-events:auto}
-.hubMain{width:72px;height:72px;border-radius:50%;border:4px solid rgba(255,255,255,.92);background:#496b56;color:white;font-size:34px;line-height:1;box-shadow:0 8px 18px rgba(0,0,0,.28)}
-.hubMain.ready{animation:pulseHub 1.4s ease-in-out infinite}
-@keyframes pulseHub{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
+.hubMain{position:relative;width:72px;height:72px;border-radius:50%;border:4px solid rgba(255,255,255,.92);background:#496b56;color:white;font-size:34px;line-height:1;box-shadow:0 8px 18px rgba(0,0,0,.28)}
+.hubMain.ready{
+  animation:pulseHub 1.15s ease-in-out infinite;
+  box-shadow:0 0 0 7px rgba(243,217,134,.28),0 0 24px rgba(243,217,134,.85),0 8px 18px rgba(0,0,0,.28);
+  background:#6f8b58;
+}
+.hubMain.ready::after{
+  content:"!";
+  position:absolute;right:-2px;top:-6px;width:25px;height:25px;border-radius:50%;
+  display:grid;place-items:center;background:#f3d986;color:#26372d;
+  font-size:16px;font-weight:950;border:2px solid white;
+}
+@keyframes pulseHub{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
 .interactionMenu{display:none;flex-direction:column;align-items:flex-end;gap:9px}
 .interactionMenu.open{display:flex}
 .interactionChoice{min-width:164px;min-height:58px;border:3px solid rgba(255,255,255,.92);border-radius:18px;background:rgba(246,239,223,.98);color:#26372d;display:flex;align-items:center;gap:12px;padding:8px 14px 8px 10px;box-shadow:0 8px 18px rgba(0,0,0,.22);font-weight:900;font-size:16px;text-align:left}
@@ -53,6 +63,24 @@ canvas{display:block;width:100%;height:100%;background:#2f4a3b}
 .interactionChoice .label{line-height:1.05}
 .interactionChoice small{display:block;font-size:11px;font-weight:700;opacity:.62;margin-top:3px}
 .interactionEmpty{background:rgba(20,31,25,.88);color:white;padding:10px 12px;border-radius:14px;font-size:13px;max-width:170px;text-align:center}
+
+
+.profilePanel{position:absolute;inset:0;background:rgba(10,18,14,.74);display:none;place-items:center;padding:18px;z-index:32}
+.profilePanel.show{display:grid}
+.profileCard{width:min(92vw,520px);background:#f6efdf;color:#26372d;border:4px solid #33483a;border-radius:24px;padding:16px;box-shadow:0 15px 35px rgba(0,0,0,.35)}
+.profileTop{display:flex;gap:14px;align-items:center}
+.profileAvatar{width:88px;height:88px;border-radius:22px;background:#6f8f65;display:grid;place-items:center;font-size:44px;border:3px solid #405747}
+.profileName{font-size:26px;font-weight:950;margin:0}
+.profileRole{font-size:14px;opacity:.7}
+.profileGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0}
+.profileStat{background:#e7dcc5;border-radius:14px;padding:10px;text-align:center}
+.profileStat b{display:block;font-size:22px}
+.profileNote{background:#2d4035;color:white;border-radius:15px;padding:12px;line-height:1.4}
+.closeProfile{width:100%;margin-top:12px;border:0;border-radius:13px;padding:12px;background:#486b52;color:white;font-weight:900;font-size:16px}
+.customGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;text-align:left;margin:12px 0}
+.customGrid label{font-size:13px;font-weight:850}
+.customGrid select,.customGrid input{width:100%;margin-top:5px;padding:10px;border-radius:10px;border:1px solid #aaa;font-size:16px;background:white}
+.futureTag{display:inline-block;margin-top:4px;padding:2px 6px;border-radius:999px;background:#5f6f62;color:white;font-size:10px;font-weight:850}
 
 .titleCard{position:absolute;inset:0;background:linear-gradient(rgba(20,31,25,.1),rgba(20,31,25,.58));display:grid;place-items:center;padding:22px;z-index:40}
 .titlePanel{width:min(92vw,520px);background:rgba(246,239,223,.97);color:#223028;border-radius:24px;padding:22px;border:4px solid #2b3c31;box-shadow:0 14px 32px rgba(0,0,0,.3);text-align:center}
@@ -68,7 +96,7 @@ canvas{display:block;width:100%;height:100%;background:#2f4a3b}
 
   <div class="hud">
     <div id="objective" class="hudCard"><b>OBJECTIVE</b>Talk to Mossheart, the camp leader.</div>
-    <div id="stats" class="hudCard"><strong id="playerName">Rayapaw</strong><br>Prey: <span id="preyCount">0</span>/2</div>
+    <div id="stats" class="hudCard"><strong id="playerName">Rayapaw</strong><br>Prey: <span id="preyCount">0</span>/2<br>Hunts: <span id="huntCatches">0</span>/<span id="huntAttempts">0</span></div>
   </div>
 
   <button id="mapBtn" class="mapBtn" type="button">🗺️ Map</button>
@@ -79,12 +107,32 @@ canvas{display:block;width:100%;height:100%;background:#2f4a3b}
       <div class="miniMap">
         <div class="mapLabel" style="left:39%;top:43%">Camp</div>
         <div class="mapLabel" style="left:36%;top:76%">Forest Path</div>
-        <div class="mapLabel" style="left:7%;top:14%">Pine Woods</div>
-        <div class="mapLabel" style="right:6%;top:18%">River</div>
-        <div class="mapLabel" style="right:4%;bottom:9%">Hunting Meadow</div>
+        <div class="mapLabel" style="left:7%;top:14%">Pine Woods<br><span class="futureTag">future</span></div>
+        <div class="mapLabel" style="right:6%;top:18%">River<br><span class="futureTag">future</span></div>
+        <div class="mapLabel" style="right:4%;bottom:9%">Hunting Meadow<br><span class="futureTag">future</span></div>
         <div id="mapYou" class="mapYou"></div>
       </div>
       <button id="closeMap" class="closeMap" type="button">Back to game</button>
+    </div>
+  </div>
+
+
+  <div id="profilePanel" class="profilePanel">
+    <div class="profileCard">
+      <div class="profileTop">
+        <div id="profileAvatar" class="profileAvatar">🐈</div>
+        <div>
+          <h2 id="profileName" class="profileName">Mossheart</h2>
+          <div id="profileRole" class="profileRole">Clan Leader</div>
+        </div>
+      </div>
+      <div class="profileGrid">
+        <div class="profileStat">Trust<b id="profileTrust">0</b></div>
+        <div class="profileStat">Talks<b id="profileTalks">0</b></div>
+        <div class="profileStat">Fights<b id="profileFights">0</b></div>
+      </div>
+      <div id="profileNote" class="profileNote"></div>
+      <button id="closeProfile" class="closeProfile" type="button">Back to game</button>
     </div>
   </div>
 
@@ -108,8 +156,47 @@ canvas{display:block;width:100%;height:100%;background:#2f4a3b}
   <div id="titleCard" class="titleCard">
     <div class="titlePanel">
       <h1>Clan Survival</h1>
-      <p>Explore the camp, meet your clan, and survive together.</p>
-      <input id="nameInput" value="Rayapaw" maxlength="20" aria-label="Cat name">
+      <p>Create your cat, then explore the camp and survive together.</p>
+      <div class="customGrid">
+        <label>Name
+          <input id="nameInput" value="Rayapaw" maxlength="20" aria-label="Cat name">
+        </label>
+        <label>Personality
+          <select id="personalitySelect">
+            <option>Brave</option><option>Clever</option><option>Kind</option>
+            <option>Curious</option><option>Loyal</option><option>Funny</option>
+          </select>
+        </label>
+        <label>Fur
+          <select id="furSelect">
+            <option value="#c9784e">Ginger</option>
+            <option value="#8c6b56">Brown</option>
+            <option value="#d1c0a2">Cream</option>
+            <option value="#59626a">Gray</option>
+            <option value="#343739">Black</option>
+          </select>
+        </label>
+        <label>Eyes
+          <select id="eyeSelect">
+            <option value="#6fa7d2">Blue</option>
+            <option value="#7dbb7d">Green</option>
+            <option value="#d3b35f">Amber</option>
+            <option value="#8d6e3f">Hazel</option>
+          </select>
+        </label>
+        <label>Markings
+          <select id="markSelect">
+            <option value="stripe">Forehead stripes</option>
+            <option value="patch">Face patch</option>
+            <option value="chest">Light chest</option>
+          </select>
+        </label>
+        <label>Clan
+          <select id="clanSelect">
+            <option>Wind</option><option>Thunder</option><option>Shadow</option><option>River</option>
+          </select>
+        </label>
+      </div>
       <button id="startBtn" type="button">Enter the camp</button>
     </div>
   </div>
@@ -119,19 +206,27 @@ canvas{display:block;width:100%;height:100%;background:#2f4a3b}
 (() => {
 const canvas=document.getElementById('game'),ctx=canvas.getContext('2d'),wrap=document.getElementById('gameWrap');
 const hubMain=document.getElementById('hubMain'),interactionMenu=document.getElementById('interactionMenu');
-const objective=document.getElementById('objective'),preyCountEl=document.getElementById('preyCount');
+const objective=document.getElementById('objective'),preyCountEl=document.getElementById('preyCount'),huntAttemptsEl=document.getElementById('huntAttempts'),huntCatchesEl=document.getElementById('huntCatches');
 const dialogue=document.getElementById('dialogue'),speakerEl=document.getElementById('speaker'),dialogueTextEl=document.getElementById('dialogueText'),dialogueBtn=document.getElementById('dialogueBtn');
 const titleCard=document.getElementById('titleCard'),startBtn=document.getElementById('startBtn'),nameInput=document.getElementById('nameInput'),playerName=document.getElementById('playerName');
 const mapBtn=document.getElementById('mapBtn'),mapPanel=document.getElementById('mapPanel'),closeMap=document.getElementById('closeMap'),mapYou=document.getElementById('mapYou');
+const profilePanel=document.getElementById('profilePanel'),closeProfile=document.getElementById('closeProfile'),profileName=document.getElementById('profileName'),profileRole=document.getElementById('profileRole'),profileTrust=document.getElementById('profileTrust'),profileTalks=document.getElementById('profileTalks'),profileFights=document.getElementById('profileFights'),profileNote=document.getElementById('profileNote'),profileAvatar=document.getElementById('profileAvatar');
+const personalitySelect=document.getElementById('personalitySelect'),furSelect=document.getElementById('furSelect'),eyeSelect=document.getElementById('eyeSelect'),markSelect=document.getElementById('markSelect'),clanSelect=document.getElementById('clanSelect');
 
 let DPR=Math.min(window.devicePixelRatio||1,2),W=0,H=0;
 function resize(){W=wrap.clientWidth;H=wrap.clientHeight;canvas.width=Math.floor(W*DPR);canvas.height=Math.floor(H*DPR);canvas.style.width=W+'px';canvas.style.height=H+'px';ctx.setTransform(DPR,0,0,DPR,0,0)}
 window.addEventListener('resize',resize);resize();
 
 const world={w:1800,h:1300,zone:'camp'};
-const player={x:900,y:700,r:18,speed:180,name:'Rayapaw',prey:0,quest:false,completed:false};
+const player={x:900,y:700,r:18,speed:180,name:'Rayapaw',prey:0,quest:false,completed:false,huntAttempts:0,huntCatches:0,fur:'#c9784e',eye:'#6fa7d2',mark:'stripe',personality:'Brave',clan:'Wind'};
 let cam={x:0,y:0},move={x:0,y:0},last=performance.now(),activeTarget=null,dialogueQueue=[],dialogueAction=null,inDialogue=false;
 
+const relationships={
+  leader:{trust:0,talks:0,fights:0,note:'The clan leader. Calm, observant, and difficult to impress.'},
+  healer:{trust:0,talks:0,fights:0,note:'The healer. Knows every herb patch and every secret injury.'},
+  warrior:{trust:0,talks:0,fights:0,note:'A serious warrior who values quiet skill over showing off.'},
+  apprentice:{trust:0,talks:0,fights:0,note:'An eager apprentice who loves challenges and friendly competition.'}
+};
 const campNPCs=[
 {id:'leader',name:'Mossheart',x:900,y:420,color:'#a76d4b',role:'Leader',eye:'#96c86f',mark:'stripe'},
 {id:'healer',name:'Dappleleaf',x:620,y:590,color:'#d8d0bf',role:'Healer',eye:'#74a8ce',mark:'patch'},
@@ -227,8 +322,9 @@ function handleInteract(){
  if(!activeTarget||inDialogue)return;
  if(activeTarget.type==='npc'){
   const n=activeTarget.obj;
+  relationships[n.id].talks++;
   if(n.id==='leader'){
-   if(!player.quest)showDialogue(n.name,[`There you are, ${player.name}. The camp is running low on food.`,'Head into the woods and bring back two pieces of prey before sunset.','Watch the animals carefully. Stalk before you pounce.'],()=>{player.quest=true;setObjective('Hunt 2 pieces of prey in the forest, then return them to camp.')});
+   if(!player.quest)showDialogue(n.name,[`There you are, ${player.name}. The camp is running low on food.`,'Head into the woods and bring back two pieces of prey before sunset.','Watch the animals carefully. Stalk before you pounce.'],()=>{player.quest=true;relationships.leader.trust+=1;setObjective('Hunt 2 pieces of prey in the forest, then return them to camp.')});
    else if(!player.completed)showDialogue(n.name,[player.prey>=2?'You have enough prey. Put it on the fresh-kill pile.':'Keep going. The clan is counting on you.']);
    else showDialogue(n.name,['Good work. You fed the clan today. That is how trust is earned.']);
   }else if(n.id==='healer')showDialogue(n.name,['You look healthy enough. Try not to prove me wrong.']);
@@ -236,8 +332,22 @@ function handleInteract(){
   else showDialogue(n.name,['I bet I could catch a mouse before you!']);
  }else if(activeTarget.type==='exit'){world.zone='forest';player.x=220;player.y=1080;setObjective(player.quest?'Find and catch 2 pieces of prey.':'Explore the forest.')}
  else if(activeTarget.type==='campExit'){world.zone='camp';player.x=900;player.y=1060}
- else if(activeTarget.type==='pile'&&player.prey>=2){player.prey-=2;preyCountEl.textContent=player.prey;player.completed=true;setObjective('Mission complete! Talk to Mossheart.');showDialogue('Camp',['You add the prey to the fresh-kill pile. Nearby cats gather gratefully.'])}
+ else if(activeTarget.type==='pile'&&player.prey>=2){player.prey-=2;preyCountEl.textContent=player.prey;player.completed=true;relationships.leader.trust+=2;setObjective('Mission complete! Talk to Mossheart.');showDialogue('Camp',['You add the prey to the fresh-kill pile. Nearby cats gather gratefully.'])}
 }
+
+
+function openProfile(n){
+ const rel=relationships[n.id];
+ profileName.textContent=n.name;
+ profileRole.textContent=`${n.role} • ${player.clan} Clan`;
+ profileTrust.textContent=rel.trust;
+ profileTalks.textContent=rel.talks;
+ profileFights.textContent=rel.fights;
+ profileNote.textContent=rel.note;
+ profileAvatar.textContent=n.id==='leader'?'🐱':n.id==='healer'?'😺':n.id==='warrior'?'😼':'😸';
+ profilePanel.classList.add('show');
+}
+closeProfile.addEventListener('click',()=>profilePanel.classList.remove('show'));
 
 function closeInteractionMenu(){interactionMenu.classList.remove('open')}
 function addInteraction(icon,label,subtext,handler){
@@ -249,20 +359,32 @@ function observePrey(p){
  const hint=p.kind==='rabbit'?'Rabbits are fast. Stalk first, then get close before you pounce.':'Mice are quick but easier to catch. Move slowly when you get close.';
  showDialogue('Hunting',[`You spot a ${p.kind} moving through the undergrowth.`,hint])
 }
-function stalkPrey(p){
- const dx=p.x-player.x,dy=p.y-player.y,m=Math.hypot(dx,dy)||1,step=Math.min(50,Math.max(16,m-50));
- player.x+=dx/m*step;player.y+=dy/m*step;showDialogue('Stalk',['You lower your body and creep forward quietly.'])
+function stalkAndPouncePrey(p){
+ const dx=p.x-player.x,dy=p.y-player.y,m=Math.hypot(dx,dy)||1,step=Math.min(52,Math.max(18,m-48));
+ player.x+=dx/m*step;player.y+=dy/m*step;
+ player.huntAttempts++;huntAttemptsEl.textContent=player.huntAttempts;
+ const d=Math.hypot(player.x-p.x,player.y-p.y);
+ const chance=p.kind==='rabbit'?(d<62?.88:.68):(d<72?.96:.82);
+ if(Math.random()<chance){
+   p.caught=true;player.prey++;player.huntCatches++;preyCountEl.textContent=player.prey;huntCatchesEl.textContent=player.huntCatches;
+   showDialogue('Stalk & Pounce',[`You creep forward... wait... then leap! You caught a ${p.kind}.`]);
+   if(player.prey>=2)setObjective('Return to camp and place the prey on the fresh-kill pile.');
+ }else{
+   const jump=p.kind==='rabbit'?150:95;p.x+=dx/m*jump;p.y+=dy/m*jump;
+   showDialogue('Stalk & Pounce',[`Almost! The ${p.kind} spots you at the last second and escapes.`]);
+ }
 }
 function pouncePrey(p){
+ player.huntAttempts++;huntAttemptsEl.textContent=player.huntAttempts;
  const d=Math.hypot(player.x-p.x,player.y-p.y),chance=p.kind==='rabbit'?(d<58?.72:.42):(d<68?.86:.62);
- if(Math.random()<chance){p.caught=true;player.prey++;preyCountEl.textContent=player.prey;showDialogue('Hunt',[`You wait... then leap! You caught a ${p.kind}.`]);if(player.prey>=2)setObjective('Return to camp and place the prey on the fresh-kill pile.')}
+ if(Math.random()<chance){p.caught=true;player.prey++;player.huntCatches++;preyCountEl.textContent=player.prey;huntCatchesEl.textContent=player.huntCatches;showDialogue('Hunt',[`You wait... then leap! You caught a ${p.kind}.`]);if(player.prey>=2)setObjective('Return to camp and place the prey on the fresh-kill pile.')}
  else{const dx=p.x-player.x,dy=p.y-player.y,m=Math.hypot(dx,dy)||1,jump=p.kind==='rabbit'?150:100;p.x+=dx/m*jump;p.y+=dy/m*jump;showDialogue('Hunt',[`Missed! The ${p.kind} darts away. Try stalking closer first.`])}
 }
 function buildInteractionMenu(){
  interactionMenu.innerHTML='';
  if(!activeTarget){interactionMenu.innerHTML='<div class="interactionEmpty">Move closer to a cat, prey, path, or object.</div>';interactionMenu.classList.add('open');return}
- if(activeTarget.type==='npc'){const n=activeTarget.obj;addInteraction('💬','Talk',n.name,handleInteract);addInteraction('👀','Look','Who is this cat?',()=>showDialogue(n.name,[`${n.name} is the clan ${n.role.toLowerCase()}.`]))}
- else if(activeTarget.type==='prey'){const p=activeTarget.obj;addInteraction('👀','Watch',p.kind==='rabbit'?'Rabbit':'Mouse',()=>observePrey(p));addInteraction('🐈','Stalk','Creep closer',()=>stalkPrey(p));addInteraction('🐾','Pounce!','Try to catch it',()=>pouncePrey(p))}
+ if(activeTarget.type==='npc'){const n=activeTarget.obj;addInteraction('💬','Talk',n.name,handleInteract);addInteraction('🪪','Who is this?','Cat card + history',()=>openProfile(n))}
+ else if(activeTarget.type==='prey'){const p=activeTarget.obj;addInteraction('🐈‍⬛','Stalk & Pounce','Higher catch chance',()=>stalkAndPouncePrey(p));addInteraction('🐾','Pounce!','Faster, lower chance',()=>pouncePrey(p));addInteraction('👀','Watch',p.kind==='rabbit'?'Rabbit':'Mouse',()=>observePrey(p))}
  else if(activeTarget.type==='exit')addInteraction('🌲','Explore','Go to the forest',handleInteract)
  else if(activeTarget.type==='campExit')addInteraction('🏕️','Return','Go back to camp',handleInteract)
  else if(activeTarget.type==='pile')addInteraction('🍖','Drop prey','Feed the clan',handleInteract);
@@ -270,7 +392,12 @@ function buildInteractionMenu(){
 }
 hubMain.addEventListener('click',()=>interactionMenu.classList.contains('open')?closeInteractionMenu():buildInteractionMenu());
 
-startBtn.addEventListener('click',()=>{player.name=(nameInput.value.trim()||'Rayapaw').slice(0,20);playerName.textContent=player.name;titleCard.style.display='none';showDialogue('Camp',['Morning light spills into the clearing. Cats are already moving between the dens.','Mossheart, the camp leader, is waiting near the leader den.'])});
+startBtn.addEventListener('click',()=>{
+ player.name=(nameInput.value.trim()||'Rayapaw').slice(0,20);
+ player.personality=personalitySelect.value;player.fur=furSelect.value;player.eye=eyeSelect.value;player.mark=markSelect.value;player.clan=clanSelect.value;
+ playerName.textContent=player.name;titleCard.style.display='none';
+ showDialogue('Camp',[`Morning light spills into the clearing. ${player.name}, a ${player.personality.toLowerCase()} cat of ${player.clan} Clan, wakes to the sound of camp.`,`Mossheart, the camp leader, is waiting near the leader den.`])
+});
 
 function updateMapDot(){
  let left,top;if(world.zone==='camp'){left=50+(player.x-900)/18;top=50+(player.y-650)/15}else{left=12+(player.x/world.w)*75;top=62+(player.y/world.h)*30}
@@ -296,7 +423,7 @@ function update(dt){
  if(!inDialogue&&titleCard.style.display==='none'){const len=Math.hypot(move.x,move.y)||1;player.x+=(move.x/len)*player.speed*dt;player.y+=(move.y/len)*player.speed*dt;if(Math.abs(move.x)+Math.abs(move.y)>.08)closeInteractionMenu();clampPlayer()}
  cam.x+=((player.x-W/2)-cam.x)*Math.min(1,dt*7);cam.y+=((player.y-H/2)-cam.y)*Math.min(1,dt*7);cam.x=Math.max(0,Math.min(world.w-W,cam.x));cam.y=Math.max(0,Math.min(world.h-H,cam.y));updateTarget()
 }
-function render(){drawBackground();if(world.zone==='camp')campNPCs.forEach(n=>drawCat(n.x,n.y,n.color,n.name,false,n.eye,n.mark));else forestPrey.forEach(p=>{if(!p.caught)drawPrey(p)});drawCat(player.x,player.y,'#c9784e',player.name,true,'#6fa7d2','stripe')}
+function render(){drawBackground();if(world.zone==='camp')campNPCs.forEach(n=>drawCat(n.x,n.y,n.color,n.name,false,n.eye,n.mark));else forestPrey.forEach(p=>{if(!p.caught)drawPrey(p)});drawCat(player.x,player.y,player.fur,player.name,true,player.eye,player.mark)}
 function loop(now){const dt=Math.min((now-last)/1000,.035);last=now;update(dt);render();requestAnimationFrame(loop)}
 requestAnimationFrame(loop);
 })();
