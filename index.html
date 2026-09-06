@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f4efe4">
+<title>Clan Survival</title>
+<style>
+:root{
+  --paper:#fffaf0;--ink:#243029;--green:#486b52;--green2:#6f8f75;
+  --gold:#d3a84d;--fur:#8c6b56;--mark:#f0eee7;--eye:#4f7fa5;
+  --shadow:0 12px 28px rgba(28,42,34,.14)
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:linear-gradient(#f6f1e7,#e9e1d2);color:var(--ink)}
+body{padding-bottom:env(safe-area-inset-bottom)}
+.wrap{max-width:760px;margin:auto;padding:18px}
+header{padding:6px 2px 16px}
+h1{font-size:40px;line-height:1;margin:0 0 7px;letter-spacing:-.7px}
+.sub{opacity:.72;font-size:16px}
+.card{background:var(--paper);border-radius:24px;padding:18px;box-shadow:var(--shadow)}
+.stage{height:300px;border-radius:22px;background:linear-gradient(#dce9d3 0 73%,#7f9e6e 73%);position:relative;overflow:hidden;display:grid;place-items:center}
+.stage:before{content:"";position:absolute;left:0;right:0;bottom:53px;height:24px;background:radial-gradient(ellipse at center,#6d8c5e 0 30%,transparent 32%) 0 0/50px 24px repeat-x;opacity:.65}
+.cat{width:184px;height:184px;position:relative;transition:transform .18s ease;transform-origin:50% 90%}
+.fur{position:absolute;background:var(--fur)}
+.body{width:124px;height:90px;border-radius:50%;left:30px;top:88px}
+.head{width:104px;height:94px;border-radius:50%;left:40px;top:25px}
+.ear{width:43px;height:53px;clip-path:polygon(50% 0,100% 100%,0 100%);top:5px}
+.ear.l{left:43px}.ear.r{left:98px}
+.tail{width:92px;height:23px;border-radius:99px;left:117px;top:113px;transform:rotate(-35deg);transform-origin:left center}
+.chest{position:absolute;background:var(--mark);width:43px;height:61px;border-radius:50%;left:71px;top:103px}
+.forehead{position:absolute;background:var(--mark);width:24px;height:23px;clip-path:polygon(50% 0,100% 100%,0 100%);left:80px;top:41px;opacity:0}
+.stripe{position:absolute;width:44px;height:7px;border-radius:99px;background:#0003;left:70px;top:48px;opacity:0}
+.stripe.two{width:31px;left:77px;top:60px}
+.eye{position:absolute;background:var(--eye);width:13px;height:18px;border-radius:50%;top:62px}
+.eye.l{left:67px}.eye.r{left:103px}
+.pupil{position:absolute;background:#111;width:4px;height:12px;border-radius:50%;top:65px}
+.pupil.l{left:71px}.pupil.r{left:107px}
+.nose{position:absolute;width:14px;height:10px;background:#a85f65;border-radius:60%;left:85px;top:82px}
+.mouth{position:absolute;width:24px;height:10px;border-bottom:2px solid #63403f;border-radius:50%;left:80px;top:91px}
+.tag{position:absolute;right:13px;top:13px;background:#fffD;border-radius:99px;padding:8px 12px;font-weight:850;z-index:2}
+.cat.brave{transform:scale(1.04)}.cat.brave .tail{transform:rotate(-55deg)}
+.cat.clever .head{transform:rotate(5deg)}
+.cat.kind .mouth{width:31px;left:77px}
+.cat.curious .head{transform:rotate(-7deg)}.cat.curious .ear.l{transform:rotate(-13deg)}.cat.curious .ear.r{transform:rotate(13deg)}
+.cat.loyal .tail{transform:rotate(-10deg)}
+.cat.funny .head{transform:rotate(8deg)}
+label{display:block;font-weight:850;margin:18px 0 8px;font-size:18px}
+input{width:100%;font-size:18px;padding:15px;border:1px solid #b9bdb7;border-radius:14px;background:#fff;color:var(--ink)}
+.segment,.swatches{display:grid;gap:8px}
+.segment{grid-template-columns:repeat(3,1fr)}
+.swatches{grid-template-columns:repeat(5,1fr)}
+.choice,.swatch,.clan,.action,.primary,.secondary{touch-action:manipulation;user-select:none}
+.choice,.swatch{border:2px solid transparent;background:#efe9dc;border-radius:14px;min-height:52px;font-weight:800;color:var(--ink);font-size:15px}
+.choice.selected,.swatch.selected{border-color:var(--green);background:#e5ede1}
+.swatch span{display:block;width:28px;height:28px;border-radius:50%;margin:auto;border:1px solid #0002}
+.clans{display:grid;gap:10px}
+.clan{appearance:none;-webkit-appearance:none;width:100%;text-align:left;background:#f0eadf;color:var(--ink);border:3px solid transparent;border-radius:18px;padding:16px}
+.clan strong{font-size:22px;display:block}.clan small{font-size:16px}.clan.selected{border-color:var(--green);background:#e5ede1}
+.picked{margin:12px 0;background:#edf3e8;padding:12px 14px;border-radius:14px;font-weight:850}
+.primary,.secondary{width:100%;font-size:19px;font-weight:850;border:0;border-radius:16px;padding:15px 18px}
+.primary{background:var(--green);color:#fff}
+.secondary{background:#e8dec7;color:var(--ink);margin-top:12px}
+.hidden{display:none!important}
+.gamehead{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.pill{background:#e8dec7;border-radius:99px;padding:7px 10px;font-weight:750}
+.order{border-left:5px solid var(--gold);padding-left:12px;line-height:1.45}
+.story{background:#263a30;color:#fff;border-radius:18px;padding:17px;line-height:1.5;margin-top:16px;min-height:122px}
+.actions{display:grid;gap:10px;margin-top:18px}
+.action{background:#f0eadf;color:var(--ink);border:0;border-radius:16px;padding:16px;text-align:left;font-size:18px;font-weight:850}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
+.stat{background:#efe9dc;border-radius:14px;padding:10px;text-align:center}
+.stat b{display:block;font-size:22px}
+.xp{height:13px;background:#d9d6cc;border-radius:99px;overflow:hidden;margin-top:12px}
+.xpfill{height:100%;background:linear-gradient(90deg,var(--green2),var(--gold));width:0}
+.small{font-size:13px;opacity:.68;margin-top:7px}
+@media(max-width:520px){.segment{grid-template-columns:repeat(2,1fr)}.swatches{grid-template-columns:repeat(4,1fr)}}
+</style>
+</head>
+<body>
+<main class="wrap">
+<header>
+  <h1>Clan Survival</h1>
+  <div class="sub">Create your cat. Choose your clan. Survive together.</div>
+</header>
+
+<section id="setup" class="card">
+  <div class="stage">
+    <div id="tag" class="tag">Brave</div>
+    <div id="cat" class="cat brave">
+      <div class="fur tail"></div><div class="fur body"></div><div class="chest"></div>
+      <div class="fur ear l"></div><div class="fur ear r"></div><div class="fur head"></div>
+      <div class="forehead"></div><div class="stripe"></div><div class="stripe two"></div>
+      <div class="eye l"></div><div class="eye r"></div>
+      <div class="pupil l"></div><div class="pupil r"></div>
+      <div class="nose"></div><div class="mouth"></div>
+    </div>
+  </div>
+
+  <label for="name">Warrior name</label>
+  <input id="name" value="Rayapaw" maxlength="20" autocomplete="off">
+
+  <label>Personality</label>
+  <div class="segment" id="personalities">
+    <button class="choice selected" type="button" data-value="brave">Brave</button>
+    <button class="choice" type="button" data-value="clever">Clever</button>
+    <button class="choice" type="button" data-value="kind">Kind</button>
+    <button class="choice" type="button" data-value="curious">Curious</button>
+    <button class="choice" type="button" data-value="loyal">Loyal</button>
+    <button class="choice" type="button" data-value="funny">Funny</button>
+  </div>
+
+  <label>Fur color</label>
+  <div class="swatches" id="furChoices">
+    <button class="swatch selected" type="button" data-value="#8c6b56" aria-label="Brown"><span style="background:#8c6b56"></span></button>
+    <button class="swatch" type="button" data-value="#d48245" aria-label="Ginger"><span style="background:#d48245"></span></button>
+    <button class="swatch" type="button" data-value="#d1c0a2" aria-label="Cream"><span style="background:#d1c0a2"></span></button>
+    <button class="swatch" type="button" data-value="#343739" aria-label="Black"><span style="background:#343739"></span></button>
+    <button class="swatch" type="button" data-value="#9b9b93" aria-label="Gray"><span style="background:#9b9b93"></span></button>
+  </div>
+
+  <label>Markings</label>
+  <div class="segment" id="markChoices">
+    <button class="choice selected" type="button" data-value="white">White chest</button>
+    <button class="choice" type="button" data-value="gold">Golden chest</button>
+    <button class="choice" type="button" data-value="dark">Dark chest</button>
+    <button class="choice" type="button" data-value="forehead">White forehead</button>
+    <button class="choice" type="button" data-value="tabby">Tabby</button>
+    <button class="choice" type="button" data-value="none">None</button>
+  </div>
+
+  <label>Eye color</label>
+  <div class="swatches" id="eyeChoices">
+    <button class="swatch selected" type="button" data-value="#4c733f" aria-label="Green"><span style="background:#4c733f"></span></button>
+    <button class="swatch" type="button" data-value="#d1a33b" aria-label="Amber"><span style="background:#d1a33b"></span></button>
+    <button class="swatch" type="button" data-value="#4f7fa5" aria-label="Blue"><span style="background:#4f7fa5"></span></button>
+    <button class="swatch" type="button" data-value="#8d6e3f" aria-label="Hazel"><span style="background:#8d6e3f"></span></button>
+  </div>
+
+  <h2>Choose your clan</h2>
+  <div class="clans">
+    <button type="button" class="clan selected" data-clan="Wind"><strong>Wind 🌾</strong><small>Fast, open-moor hunters.</small></button>
+    <button type="button" class="clan" data-clan="Thunder"><strong>Thunder 🌳</strong><small>Bold forest defenders.</small></button>
+    <button type="button" class="clan" data-clan="Shadow"><strong>Shadow 🌙</strong><small>Quiet, clever night stalkers.</small></button>
+    <button type="button" class="clan" data-clan="River"><strong>River 💧</strong><small>Strong swimmers and fishers.</small></button>
+  </div>
+  <div class="picked">Selected clan: <span id="picked">Wind</span> Clan</div>
+  <button type="button" id="enter" class="primary">Enter the forest</button>
+</section>
+
+<section id="game" class="card hidden">
+  <div class="gamehead">
+    <div><h2 id="welcome">Welcome!</h2><div id="identity"></div></div>
+    <div class="pill">Week <span id="week">1</span></div>
+  </div>
+
+  <div class="stats">
+    <div class="stat">Hunt<b id="huntStat">1</b></div>
+    <div class="stat">Defense<b id="defStat">1</b></div>
+    <div class="stat">Trust<b id="trustStat">1</b></div>
+  </div>
+  <div class="xp"><div class="xpfill" id="xpfill"></div></div>
+  <div class="small"><span id="xptext">0</span> / 100 XP to Warrior</div>
+
+  <p class="order"><b>Leader's order:</b> Bring back food for the clan before sunset.</p>
+  <div id="story" class="story">Morning light reaches camp. Your clan is counting on you. What will you do?</div>
+
+  <div class="actions">
+    <button class="action" type="button" data-action="hunt">🐾 Hunt for food</button>
+    <button class="action" type="button" data-action="train">🌿 Train with a clanmate</button>
+    <button class="action" type="button" data-action="patrol">🛡️ Patrol the border</button>
+    <button class="action" type="button" data-action="order">⭐ Follow the leader's order</button>
+  </div>
+  <button id="nextWeek" class="secondary" type="button">Finish week</button>
+  <button id="back" class="secondary" type="button">Back to cat creator</button>
+</section>
+</main>
+
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  const state = {clan:'Wind', personality:'brave', fur:'#8c6b56', mark:'white', eye:'#4c733f', xp:0, hunt:1, defense:1, trust:1, week:1};
+  const cat = $('cat'), tag = $('tag');
+
+  function titleCase(s){return s.charAt(0).toUpperCase()+s.slice(1)}
+
+  function applyCat(){
+    cat.className = 'cat ' + state.personality;
+    tag.textContent = titleCase(state.personality);
+    document.documentElement.style.setProperty('--fur',state.fur);
+    document.documentElement.style.setProperty('--eye',state.eye);
+
+    const chest = document.querySelector('.chest');
+    const fore = document.querySelector('.forehead');
+    const stripes = document.querySelectorAll('.stripe');
+    chest.style.opacity='0'; fore.style.opacity='0'; stripes.forEach(s=>s.style.opacity='0');
+
+    let c='#f0eee7';
+    if(state.mark==='white'){c='#f0eee7';chest.style.opacity='1'}
+    if(state.mark==='gold'){c='#c8a879';chest.style.opacity='1'}
+    if(state.mark==='dark'){c='#5a4338';chest.style.opacity='1'}
+    if(state.mark==='forehead'){c='#f0eee7';fore.style.opacity='1'}
+    if(state.mark==='tabby'){stripes.forEach(s=>s.style.opacity='1')}
+    document.documentElement.style.setProperty('--mark',c);
+  }
+
+  function bindChoice(containerId,key){
+    document.querySelectorAll('#'+containerId+' button').forEach(btn=>{
+      btn.addEventListener('click',function(){
+        document.querySelectorAll('#'+containerId+' button').forEach(x=>x.classList.remove('selected'));
+        this.classList.add('selected');
+        state[key]=this.dataset.value;
+        applyCat();
+      });
+    });
+  }
+
+  bindChoice('personalities','personality');
+  bindChoice('furChoices','fur');
+  bindChoice('markChoices','mark');
+  bindChoice('eyeChoices','eye');
+
+  document.querySelectorAll('.clan').forEach(btn=>{
+    btn.addEventListener('click',function(){
+      document.querySelectorAll('.clan').forEach(x=>x.classList.remove('selected'));
+      this.classList.add('selected');
+      state.clan=this.dataset.clan;
+      $('picked').textContent=state.clan;
+    });
+  });
+
+  function refresh(){
+    $('huntStat').textContent=state.hunt;
+    $('defStat').textContent=state.defense;
+    $('trustStat').textContent=state.trust;
+    $('xptext').textContent=state.xp;
+    $('xpfill').style.width=Math.min(state.xp,100)+'%';
+    $('week').textContent=state.week;
+  }
+
+  $('enter').addEventListener('click',function(){
+    const n=$('name').value.trim()||'Willowpaw';
+    state.name=n;
+    $('welcome').textContent='Welcome, '+n+'!';
+    $('identity').textContent=state.clan+' Clan • '+titleCase(state.personality);
+    $('setup').classList.add('hidden');
+    $('game').classList.remove('hidden');
+    window.scrollTo(0,0);
+  });
+
+  const stories={
+    hunt:"You crouch low and listen. A rustle! You follow the sound and bring food back to camp. Hunting skill +1.",
+    train:"You practice stalking and quick turns with a clanmate. You miss once, try again, and improve.",
+    patrol:"You follow the border carefully and spot fresh tracks. You report them to the clan. Defense skill +1.",
+    order:"You put the clan's need first and complete the leader's task. Clan trust +1."
+  };
+
+  document.querySelectorAll('.action').forEach(btn=>{
+    btn.addEventListener('click',function(){
+      const a=this.dataset.action;
+      if(a==='hunt'){state.hunt++;state.xp+=20}
+      if(a==='train'){state.hunt++;state.defense++;state.xp+=18}
+      if(a==='patrol'){state.defense++;state.xp+=20}
+      if(a==='order'){state.trust++;state.xp+=25}
+      $('story').textContent=stories[a];
+      if(state.xp>=100){$('story').textContent += " You have enough XP to become a Warrior!"; state.xp=100}
+      refresh();
+    });
+  });
+
+  $('nextWeek').addEventListener('click',function(){
+    state.week++;
+    $('story').textContent='A new week begins. The clan gathers to hear the leader’s next order.';
+    refresh();
+  });
+
+  $('back').addEventListener('click',function(){
+    $('game').classList.add('hidden');
+    $('setup').classList.remove('hidden');
+    window.scrollTo(0,0);
+  });
+
+  applyCat(); refresh();
+})();
+</script>
+</body>
+</html>
