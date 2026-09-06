@@ -105,11 +105,50 @@
     font-size:13px;display:none;white-space:nowrap;
   }
   .hint.show{display:block}
+
+  .mapBtn{
+    position:absolute;right:14px;top:calc(92px + env(safe-area-inset-top));
+    border:0;border-radius:14px;padding:10px 13px;background:rgba(246,239,223,.94);
+    color:#26372d;font-size:15px;font-weight:900;box-shadow:0 5px 14px rgba(0,0,0,.2);
+  }
+  .mapPanel{
+    position:absolute;inset:0;background:rgba(12,20,16,.72);display:none;
+    place-items:center;padding:22px;z-index:20;
+  }
+  .mapPanel.show{display:grid}
+  .mapCard{
+    width:min(92vw,520px);background:#efe5ca;color:#26372d;border:4px solid #33483a;
+    border-radius:24px;padding:16px;box-shadow:0 15px 35px rgba(0,0,0,.35)
+  }
+  .mapCard h2{margin:0 0 10px}
+  .miniMap{
+    height:330px;border-radius:18px;position:relative;overflow:hidden;
+    background:radial-gradient(circle at 50% 52%,#789b6d 0 27%,#4d7358 28% 45%,#294d3b 46%);
+    border:3px solid #8b7652;
+  }
+  .mapLabel{position:absolute;background:#fff9;padding:5px 7px;border-radius:8px;font-size:12px;font-weight:850}
+  .mapYou{position:absolute;width:18px;height:18px;border-radius:50%;background:#d88b55;border:3px solid white;box-shadow:0 2px 6px #0005}
+  .closeMap{width:100%;margin-top:12px;border:0;border-radius:13px;padding:12px;background:#486b52;color:white;font-weight:900;font-size:16px}
 </style>
 </head>
 <body>
 <div id="gameWrap">
   <canvas id="game"></canvas>
+  <button id="mapBtn" class="mapBtn" type="button">🗺️ Map</button>
+  <div id="mapPanel" class="mapPanel">
+    <div class="mapCard">
+      <h2>Territory Map</h2>
+      <div id="miniMap" class="miniMap">
+        <div class="mapLabel" style="left:38%;top:43%">Camp</div>
+        <div class="mapLabel" style="left:38%;top:76%">Forest Path</div>
+        <div class="mapLabel" style="left:8%;top:15%">Pine Woods</div>
+        <div class="mapLabel" style="right:7%;top:18%">River</div>
+        <div class="mapLabel" style="right:7%;bottom:10%">Hunting Meadow</div>
+        <div id="mapYou" class="mapYou"></div>
+      </div>
+      <button id="closeMap" class="closeMap" type="button">Back to game</button>
+    </div>
+  </div>
 
   <div class="hud">
     <div id="objective" class="hudCard">
@@ -200,11 +239,18 @@
     {id:'apprentice',name:'Pipaw',x:760,y:840,color:'#d4a66d',role:'Apprentice',mood:'excited'}
   ];
 
-  const forestPrey = [
-    {id:1,x:520,y:390,caught:false,phase:0},
-    {id:2,x:960,y:610,caught:false,phase:1.7},
-    {id:3,x:1320,y:850,caught:false,phase:3.1}
-  ];
+  const forestPrey = [];
+  const preyKinds=['mouse','mouse','mouse','rabbit','mouse','rabbit','mouse','rabbit','mouse','mouse','rabbit','mouse'];
+  preyKinds.forEach((kind,i)=>{
+    forestPrey.push({
+      id:i+1, kind,
+      x:260 + (i*137)%1250,
+      y:250 + (i*211)%760,
+      caught:false, phase:i*.83,
+      vx:(i%2?1:-1)*(kind==='rabbit'?48:28),
+      vy:((i%3)-1)*(kind==='rabbit'?32:18)
+    });
+  });
 
   const trees = [];
   function makeTrees(){
@@ -324,6 +370,19 @@
     ctx.fillStyle='#f2e6cc';
     ctx.beginPath();ctx.ellipse(0,4,8,15,0,0,Math.PI*2);ctx.fill();
 
+    // Individual markings so clan cats are visually distinct.
+    const mark=(name.charCodeAt(0)+name.length)%4;
+    if(mark===0){
+      ctx.fillStyle='#3d3530';ctx.beginPath();ctx.ellipse(-8,-28,7,5,-.4,0,Math.PI*2);ctx.fill();
+    }else if(mark===1){
+      ctx.strokeStyle='#55483d';ctx.lineWidth=3;
+      [-5,1,7].forEach(xx=>{ctx.beginPath();ctx.moveTo(xx,-36);ctx.lineTo(xx-3,-29);ctx.stroke()});
+    }else if(mark===2){
+      ctx.fillStyle='#f7efe0';ctx.beginPath();ctx.ellipse(7,-26,6,8,.3,0,Math.PI*2);ctx.fill();
+    }else{
+      ctx.fillStyle='#59463c';ctx.beginPath();ctx.ellipse(-10,1,6,12,-.2,0,Math.PI*2);ctx.fill();
+    }
+
     ctx.fillStyle=isPlayer?'#6fa7d2':'#a9d075';
     ctx.beginPath();ctx.arc(-6,-21,3.3,0,Math.PI*2);ctx.arc(6,-21,3.3,0,Math.PI*2);ctx.fill();
     ctx.fillStyle='#111';
@@ -336,15 +395,24 @@
     ctx.restore();
   }
 
-  function drawMouse(p){
-    const bob=Math.sin(performance.now()/350+p.phase)*3;
+  function drawPrey(p){
+    const bob=Math.sin(performance.now()/300+p.phase)*2;
     const sx=worldToScreenX(p.x),sy=worldToScreenY(p.y+bob);
-    if(sx<-40||sx>W+40||sy<-40||sy>H+40)return;
-    ctx.fillStyle='#9b8d7e';
-    ctx.beginPath();ctx.ellipse(sx,sy,10,7,0,0,Math.PI*2);ctx.fill();
-    ctx.beginPath();ctx.arc(sx+8,sy-3,5,0,Math.PI*2);ctx.fill();
-    ctx.strokeStyle='#9b8d7e';ctx.lineWidth=2;
-    ctx.beginPath();ctx.moveTo(sx-9,sy);ctx.quadraticCurveTo(sx-22,sy-7,sx-27,sy+3);ctx.stroke();
+    if(sx<-50||sx>W+50||sy<-50||sy>H+50)return;
+    if(p.kind==='rabbit'){
+      ctx.fillStyle='#b9aa92';
+      ctx.beginPath();ctx.ellipse(sx,sy,14,10,0,0,Math.PI*2);ctx.fill();
+      ctx.beginPath();ctx.arc(sx+11,sy-5,7,0,Math.PI*2);ctx.fill();
+      ctx.beginPath();ctx.ellipse(sx+9,sy-17,4,12,-.18,0,Math.PI*2);ctx.fill();
+      ctx.beginPath();ctx.ellipse(sx+16,sy-16,4,12,.18,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='#eee6d7';ctx.beginPath();ctx.arc(sx-13,sy-2,5,0,Math.PI*2);ctx.fill();
+    }else{
+      ctx.fillStyle='#9b8d7e';
+      ctx.beginPath();ctx.ellipse(sx,sy,10,7,0,0,Math.PI*2);ctx.fill();
+      ctx.beginPath();ctx.arc(sx+8,sy-3,5,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle='#9b8d7e';ctx.lineWidth=2;
+      ctx.beginPath();ctx.moveTo(sx-9,sy);ctx.quadraticCurveTo(sx-22,sy-7,sx-27,sy+3);ctx.stroke();
+    }
   }
 
   function dist(a,b){return Math.hypot(a.x-b.x,a.y-b.y)}
@@ -457,7 +525,7 @@
     if(Math.random()<0.78){
       p.caught=true;player.prey++;
       preyCountEl.textContent=player.prey;
-      showDialogue('Hunt',['You wait... then pounce! You caught the prey.']);
+      showDialogue('Hunt',[`You wait... then pounce! You caught a ${p.kind}.`]);
       if(player.prey>=2)setObjective('Return to camp and place the prey on the fresh-kill pile.');
     }else{
       p.x+=90;p.y-=50;
@@ -471,6 +539,23 @@
     titleCard.style.display='none';
     showDialogue('Camp',['Morning light spills into the clearing. Cats are already moving between the dens.','Mossheart, the camp leader, is waiting near the leader den.']);
   });
+
+  const mapBtn=document.getElementById('mapBtn');
+  const mapPanel=document.getElementById('mapPanel');
+  const closeMap=document.getElementById('closeMap');
+  const mapYou=document.getElementById('mapYou');
+  function updateMapDot(){
+    let left,top;
+    if(world.zone==='camp'){
+      left=50+(player.x-900)/18; top=50+(player.y-650)/15;
+    }else{
+      left=12+(player.x/world.w)*75; top=62+(player.y/world.h)*30;
+    }
+    mapYou.style.left=Math.max(3,Math.min(94,left))+'%';
+    mapYou.style.top=Math.max(3,Math.min(92,top))+'%';
+  }
+  mapBtn.addEventListener('click',()=>{updateMapDot();mapPanel.classList.add('show')});
+  closeMap.addEventListener('click',()=>mapPanel.classList.remove('show'));
 
   const joystick=document.getElementById('joystick');
   const stick=document.getElementById('stick');
@@ -525,6 +610,21 @@
   }
 
   function update(dt){
+    if(world.zone==='forest'){
+      forestPrey.forEach(p=>{
+        if(p.caught)return;
+        p.x+=p.vx*dt; p.y+=p.vy*dt;
+        if(p.x<180||p.x>1570){p.vx*=-1;p.x=Math.max(180,Math.min(1570,p.x))}
+        if(p.y<180||p.y>1080){p.vy*=-1;p.y=Math.max(180,Math.min(1080,p.y))}
+        // Prey becomes skittish if the player gets close.
+        const d=Math.hypot(player.x-p.x,player.y-p.y);
+        if(d<150){
+          const dx=p.x-player.x,dy=p.y-player.y,m=Math.hypot(dx,dy)||1;
+          const flee=p.kind==='rabbit'?95:65;
+          p.x+=dx/m*flee*dt;p.y+=dy/m*flee*dt;
+        }
+      });
+    }
     if(!inDialogue && titleCard.style.display==='none'){
       const len=Math.hypot(move.x,move.y)||1;
       player.x += (move.x/len)*player.speed*dt;
@@ -543,7 +643,7 @@
     if(world.zone==='camp'){
       campNPCs.forEach(n=>drawCat(n.x,n.y,n.color,n.name,false));
     }else{
-      forestPrey.forEach(p=>{if(!p.caught)drawMouse(p)});
+      forestPrey.forEach(p=>{if(!p.caught)drawPrey(p)});
     }
     drawCat(player.x,player.y,'#c9784e',player.name,true);
   }
