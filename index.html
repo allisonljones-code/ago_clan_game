@@ -22,7 +22,7 @@ canvas{display:block;width:100%;height:100%}
 .needRow{display:flex;gap:6px;margin-top:4px}
 .need{font-size:11px;background:#ffffff14;border-radius:999px;padding:3px 6px}
 
-.topBtns{position:absolute;top:calc(120px + env(safe-area-inset-top));right:10px;display:flex;gap:7px;z-index:8}
+.topBtns{position:absolute;top:calc(142px + env(safe-area-inset-top));right:10px;display:flex;gap:7px;z-index:8}
 .topBtn{border:0;border-radius:13px;background:#f5edda;color:#29372e;padding:9px 10px;font-size:14px;font-weight:900;box-shadow:0 5px 12px #0003}
 
 .controls{position:absolute;left:18px;bottom:calc(14px + env(safe-area-inset-bottom));z-index:10}
@@ -66,7 +66,7 @@ canvas{display:block;width:100%;height:100%}
 .custom input,.custom select{width:100%;padding:10px;border-radius:10px;border:1px solid #aaa;background:white;font-size:15px;margin-top:4px}
 .preview{font-size:60px;margin:4px 0}
 
-.dayArc{position:absolute;left:10px;right:10px;top:calc(78px + env(safe-area-inset-top));height:56px;z-index:4;pointer-events:none}.dayArc svg{width:100%;height:100%;overflow:visible}.dayArc path{fill:none;stroke:#ffffff66;stroke-width:2;stroke-dasharray:5 5}.skyOrb{position:absolute;font-size:25px;transform:translate(-50%,-50%)}.progressBar{height:7px;background:#ffffff22;border-radius:99px;margin-top:6px;overflow:hidden}.progressFill{height:100%;background:var(--gold);width:0}.dialogueHead{display:flex;gap:11px;align-items:center}.portrait{width:62px;height:62px;flex:none;border-radius:50%;background:#d9d0b8;border:3px solid #314438;overflow:hidden}.portrait canvas{width:62px;height:62px}.mapArea{position:absolute;border:2px solid #fff9;border-radius:10px;background:#ffffff18;color:#fff;font-size:9px;font-weight:900;display:grid;place-items:center;text-align:center}
+.dayArc{position:absolute;left:24px;right:24px;top:calc(102px + env(safe-area-inset-top));height:36px;z-index:6;pointer-events:none}.dayArc svg{width:100%;height:100%;overflow:visible}.dayArc path{fill:none;stroke:#ffffff66;stroke-width:2;stroke-dasharray:5 5}.skyOrb{position:absolute;font-size:25px;transform:translate(-50%,-50%)}.progressBar{height:7px;background:#ffffff22;border-radius:99px;margin-top:6px;overflow:hidden}.progressFill{height:100%;background:var(--gold);width:0}.dialogueHead{display:flex;gap:11px;align-items:center}.portrait{width:62px;height:62px;flex:none;border-radius:50%;background:#d9d0b8;border:3px solid #314438;overflow:hidden}.portrait canvas{width:62px;height:62px}.mapArea{position:absolute;border:2px solid #fff9;border-radius:10px;background:#ffffff18;color:#fff;font-size:9px;font-weight:900;display:grid;place-items:center;text-align:center}
 
 .skillTrack{height:8px;background:#00000018;border-radius:99px;margin-top:7px;overflow:hidden}
 .skillFill{height:100%;background:#486b52;border-radius:99px;width:0%}
@@ -79,7 +79,7 @@ canvas{display:block;width:100%;height:100%}
 <div id="wrap">
 <canvas id="game"></canvas>
 
-<div class="dayArc"><svg viewBox="0 0 400 55" preserveAspectRatio="none"><path d="M5 48 Q200 -12 395 48"/></svg><div id="skyOrb" class="skyOrb">☀️</div></div><div class="hud">
+<div class="dayArc"><svg viewBox="0 0 400 55" preserveAspectRatio="none"><path d="M5 30 Q200 2 395 30"/></svg><div id="skyOrb" class="skyOrb">☀️</div></div><div class="hud">
  <div id="objective" class="card"><b>FIRST LIGHT</b><span id="objectiveText">Wake up and find Nightpelt.</span><div class="progressBar"><div id="progressFill" class="progressFill"></div></div></div>
  <div id="clock" class="card"><strong id="timeText">☀️ 7:00 AM</strong><br><span id="ageText">Young Kit • Day 1</span><div class="needRow"><span class="need">🍖 <span id="hunger">90</span></span><span class="need">⚡ <span id="energy">90</span></span><span class="need">❤️ <span id="health">100</span></span></div></div>
 </div>
@@ -114,7 +114,9 @@ canvas{display:block;width:100%;height:100%}
  <h3>The waterfall</h3>
  <p>Starting on <b>Day 2</b>, a new exploration objective appears. Follow the clue toward the <b>southwest edge</b> of your home area. When you get close enough, the waterfall discovers itself and is added to your map.</p>
 
- <h3>Progression</h3><p>First Light uses milestones, not a hard timer. Easy needs 2 training actions, Medium 4, and Hard 6. The chapter usually unfolds over about seven game days, but you can explore at your own pace.</p><h3>Area activities</h3><p>Important home areas have small tasks. Walk into the Family Den, Hunters, Healer, or Elder area and use the glowing paw.</p><h3>What happens later?</h3>
+ <h3>Progression</h3><p>First Light uses milestones, not a hard timer. Easy needs 2 training actions, Medium 4, and Hard 6. The chapter usually unfolds over about seven game days, but you can explore at your own pace.</p><h3>Area activities</h3><p>Important home areas have small tasks. Walk into the Family Den, Hunters, Healer, or Elder area and use the glowing paw.</p><h3>Waterfall visits</h3>
+<p>Your first meeting with the opposite-species friend is guaranteed. After that, they usually visit the waterfall between late morning and late afternoon. If they are not there, you can still use the waterfall activities and return later.</p>
+<h3>What happens later?</h3>
  <p>First Light begins with family, play, and learning your home. As you grow, you will learn to hunt, track or stalk, explore farther, patrol borders, meet animals outside your own society, and make choices that affect relationships and the story.</p>
 
  <p><b>Tip:</b> There is no need to rush. Talking to characters, playing with siblings, exploring, eating, and sleeping are all part of progressing.</p>
@@ -397,6 +399,14 @@ function waterfallBackground(){
  ctx.font='bold 14px -apple-system';ctx.textAlign='center';
  ctx.fillStyle='#fffddd';ctx.fillRect(sx(900)-52,sy(245)-15,104,22);
  ctx.fillStyle='#26342b';ctx.fillText('Waterfall',sx(900),sy(245)+1);
+
+ // explicit trail-home sign
+ const exitText=`← Trail Home`;
+ let ex=sx(900),ey=sy(930);
+ ctx.font='bold 13px -apple-system';ctx.textAlign='center';
+ let ew=ctx.measureText(exitText).width+18;
+ ctx.fillStyle='#fffddd';ctx.fillRect(ex-ew/2,ey-16,ew,23);
+ ctx.fillStyle='#26342b';ctx.fillText(exitText,ex,ey+1);
 }
 
 function background(){
@@ -407,6 +417,14 @@ function background(){
 function distance(a,b){return Math.hypot(a.x-b.x,a.y-b.y)}
 const waterfall={x:640,y:390};
 function maybeFindWaterfall(){}
+
+function secretFriendAvailable(){
+ if(!player.friendMet)return true;
+ const hr=(player.minute/60)%24;
+ // Story scenes can later override this in one place.
+ return hr>=10 && hr<17;
+}
+
 function meetSecretFriend(){
  if(player.friendMet)return;
  player.friendMet=true;player.milestones.friend=true;updateProgress();
@@ -439,11 +457,19 @@ function updateTarget(){
  if(player.zone==='waterfall'){
    let d=Math.hypot(player.x-900,player.y-920);
    if(d<110){best=d;active={type:'travel',to:'home'}}
+
+   // pool / rocks activity zone
+   let poolD=Math.hypot(player.x-900,player.y-575);
+   if(poolD<150 && poolD<best){
+     best=poolD;
+     active={type:'waterfallActivity'};
+   }
  }
 
  // characters only exist in their own zone
  cats.forEach(c=>{
    if((c.zone||'home')!==player.zone)return;
+   if(c.id==='secretFriend'&&!secretFriendAvailable())return;
    let d=distance(player,c);
    if(d<95&&d<best){best=d;active={type:'cat',cat:c}}
  });
@@ -479,7 +505,7 @@ $('dialogueBtn').onclick=nextLine;
 
 function memory(text){if(!player.memories.includes(text))player.memories.push(text)}
 function addChoice(icon,label,small,fn){let b=document.createElement('button');b.className='choice';b.innerHTML=`<span class="ico">${icon}</span><span>${label}<small>${small}</small></span>`;b.onclick=()=>{$('menu').classList.remove('open');fn()};$('menu').appendChild(b)}
-function talk(c){let r=rel[c.id];r.talks++;r.trust=Math.min(100,r.trust+2);player.skills.social++;if(c.id==='mother'){player.milestones.mother=true;updateProgress()}r.history.push(`💬 Talked on Day ${player.day}.`);if(c.id==='mother')dialogue(c.name,[`Good morning, ${player.name}. Stay close until your paws get a little bigger.`,`Your siblings are awake. Go play — and come back when you're hungry.`],()=>{setObjective(`Play with ${cats.find(x=>x.id==='sister').name} or ${cats.find(x=>x.id==='brother').name}.`)});else if(c.id==='leader')dialogue(c.name,['Mossheart studies you carefully.','“Small paws today. Fierce paws someday, perhaps.”']);else dialogue(c.name,[`${c.name} flicks their tail and greets you.`])}
+function talk(c){let r=rel[c.id];r.talks++;r.trust=Math.min(100,r.trust+2);player.skills.social++;if(c.id==='mother'){player.milestones.mother=true;updateProgress()}r.history.push(`💬 Talked on Day ${player.day}.`);if(c.id==='mother')dialogue(c.name,[`Good morning, ${player.name}. Stay close until your paws get a little bigger.`,`Your siblings are awake. Go play — and come back when you're hungry.`],()=>{setObjective(`Play with ${cats.find(x=>x.id==='sister').name} or ${cats.find(x=>x.id==='brother').name}.`)});else if(c.id==='leader')dialogue(c.name,[`${c.name} studies you carefully.`,`“Small paws today. Fierce paws someday, perhaps.”`]);else dialogue(c.name,[`${c.name} flicks their tail and greets you.`])}
 function playPounce(c){player.skills.pounce++;player.milestones.play=true;player.milestones.training++;updateProgress();player.energy=Math.max(0,player.energy-5);rel[c.id].bond=Math.min(100,rel[c.id].bond+3);rel[c.id].history.push(`🐾 Practiced pouncing together on Day ${player.day}.`);dialogue('Play Pounce',[`You crouch... wiggle... POUNCE! ${c.name} tumbles into the moss.`,`Pouncing +1`])}
 function playFight(c){player.skills.fight++;player.milestones.play=true;player.milestones.training++;updateProgress();player.energy=Math.max(0,player.energy-7);rel[c.id].fights++;rel[c.id].bond=Math.min(100,rel[c.id].bond+2);rel[c.id].history.push(`⚔️ Play-fought on Day ${player.day}.`);dialogue('Play Fight',[`You and ${c.name} wrestle until one of you rolls into the grass.`,`Fighting +1`])}
 function stalk(c){player.skills.stealth++;player.milestones.play=true;player.milestones.training++;updateProgress();player.energy=Math.max(0,player.energy-4);rel[c.id].history.push(`👀 Practiced stalking on Day ${player.day}.`);dialogue('Stalk',[`You flatten yourself into the grass and creep toward ${c.name}.`,`Stealth +1`])}
@@ -534,6 +560,12 @@ function travelTo(zone){
        'The trail opens onto a hidden waterfall.',
        'Something moves beside the pool...'
      ],()=>meetSecretFriend());
+   } else if(player.friendMet && !secretFriendAvailable()){
+     const friendName=player.species==='wolf'?'Luma':'Rowan';
+     dialogue('Waterfall',[
+       `${friendName} isn't here right now.`,
+       `You can still swim, explore the rocks, or come back later in the day.`
+     ]);
    }
  }else{
    player.zone='home';
@@ -542,9 +574,37 @@ function travelTo(zone){
  }
 }
 
-function buildMenu(){$('menu').innerHTML='';if(!active)return;if(active.type==='cat'){let c=active.cat;addChoice('💬','Talk',c.name,()=>talk(c));addChoice('🪪','Who is this?','Card + relationship history',()=>openProfile(c));if(c.id==='sister'||c.id==='brother'){addChoice('🐾','Play Pounce','Practice pouncing',()=>playPounce(c));addChoice('🐈‍⬛','Stalk','Sneak up quietly',()=>stalk(c));addChoice('⚔️','Play Fight','Friendly wrestling',()=>playFight(c))}if(c.id==='mother')addChoice('🍖','Eat','Ask Nightpelt for food',eat)}else if(active.type==='travel'){
+function buildMenu(){$('menu').innerHTML='';if(!active)return;if(active.type==='cat'){let c=active.cat;addChoice('💬','Talk',c.name,()=>talk(c));addChoice('🪪','Who is this?','Card + relationship history',()=>openProfile(c));if(c.id==='sister'||c.id==='brother'){addChoice('🐾','Play Pounce','Practice pouncing',()=>playPounce(c));addChoice('🐈‍⬛','Stalk','Sneak up quietly',()=>stalk(c));addChoice('⚔️','Play Fight','Friendly wrestling',()=>playFight(c))}if(c.id==='mother')addChoice('🍖','Eat',`Ask ${c.name} for food`,eat)}else if(active.type==='travel'){
  if(active.to==='waterfall')addChoice('💧','Follow Trail','Go to the waterfall',()=>travelTo('waterfall'));
- else addChoice('🌲','Return Home','Go back to your Pack / Colony',()=>travelTo('home'));
+ else addChoice('🌲','Return Home',`Return to ${player.homeGroup}`,()=>travelTo('home'));
+}else if(active.type==='waterfallActivity'){
+ if(player.species==='wolf'){
+   addChoice('🌊','Swim the Pool','Practice strength and water confidence',()=>{
+     player.energy=Math.max(0,player.energy-6);
+     player.skills.fight++;
+     memory(`🌊 Swam beneath the waterfall on Day ${player.day}.`);
+     dialogue('Waterfall',['You paddle into the cold pool and push against the current.','Strength and confidence +1.']);
+   });
+   addChoice('👃','Track the Spray','Follow scents around wet rocks',()=>{
+     player.energy=Math.max(0,player.energy-4);
+     player.skills.stealth++;
+     memory(`💧 Practiced scenting around the waterfall on Day ${player.day}.`);
+     dialogue('Waterfall',['You circle the wet rocks, sorting moss, water, stone, and animal scents.','Scenting +1.']);
+   });
+ }else{
+   addChoice('🪨','Leap the Rocks','Practice balance and pouncing',()=>{
+     player.energy=Math.max(0,player.energy-5);
+     player.skills.pounce++;
+     memory(`🪨 Leapt across waterfall rocks on Day ${player.day}.`);
+     dialogue('Waterfall',['You crouch on one slick rock... then leap to the next!','Pouncing +1.']);
+   });
+   addChoice('🌊','Paddle the Pool','Swim along the shallow edge',()=>{
+     player.energy=Math.max(0,player.energy-5);
+     player.skills.fight++;
+     memory(`🌊 Paddled in the waterfall pool on Day ${player.day}.`);
+     dialogue('Waterfall',['The water is cold, but you paddle along the edge and scramble back onto a rock.','Confidence +1.']);
+   });
+ }
 }else if(active.type==='bed'){addChoice('💤','Sleep','End the day',sleep);addChoice('🪶','Tidy Bedding','Small den task',()=>dialogue('Family Den',['You tug the moss and leaves into a warm nest.']))}
 else if(active.type==='area'){let a=active.area;if(a.id==='hunters')addChoice('🍖','Drop Prey','Practice bringing food home',()=>{player.milestones.hunt=true;updateProgress();dialogue('Hunters',['You carry your practice prey to the food place and drop it carefully.','First responsibility complete!'])});if(a.id==='healerArea')addChoice('🌿','Sort Herbs','Help in the healer area',()=>dialogue('Herb Hollow',['You sort broad leaves from narrow ones.']));if(a.id==='elderArea')addChoice('👃','Scent Lesson','Remember an important scent',()=>{player.skills.stealth++;dialogue('Elder Area',['You breathe in slowly and memorize the scents around you.','Scent skill +1'])})}$('menu').classList.add('open')}
 $('hubMain').onclick=()=>$('menu').classList.contains('open')?$('menu').classList.remove('open'):buildMenu();
@@ -716,13 +776,16 @@ function updateNPCs(dt){
  });
 }
 
-function timeDisplay(){let h=Math.floor(player.minute/60)%24,m=Math.floor(player.minute%60),amp=h>=12?'PM':'AM',hh=h%12||12,icon=h<8?'🌅':h<18?'☀️':h<21?'🌇':'🌙';$('timeText').textContent=`${icon} ${hh}:${String(m).padStart(2,'0')} ${amp}`;$('ageText').textContent=`Young ${player.species==='wolf'?'Pup':'Kit'} • Day ${player.day}`;$('hunger').textContent=Math.round(player.hunger);$('energy').textContent=Math.round(player.energy);$('health').textContent=Math.round(player.health);let hr=(player.minute/60)%24,orb=$('skyOrb'),daylight=hr>=6&&hr<19;orb.textContent=daylight?'☀️':'🌙';let ph=daylight?(hr-6)/13:((hr>=19?hr-19:hr+5)/11);orb.style.left=(5+ph*90)+'%';orb.style.top=(46-Math.sin(Math.PI*ph)*42)+'px';wrap.style.filter=hr>=20||hr<6?'brightness(.62) saturate(.8)':(hr>=18?'brightness(.82)':'none')}
+function timeDisplay(){let h=Math.floor(player.minute/60)%24,m=Math.floor(player.minute%60),amp=h>=12?'PM':'AM',hh=h%12||12,icon=h<8?'🌅':h<18?'☀️':h<21?'🌇':'🌙';$('timeText').textContent=`${icon} ${hh}:${String(m).padStart(2,'0')} ${amp}`;$('ageText').textContent=`Young ${player.species==='wolf'?'Pup':'Kit'} • Day ${player.day}`;$('hunger').textContent=Math.round(player.hunger);$('energy').textContent=Math.round(player.energy);$('health').textContent=Math.round(player.health);let hr=(player.minute/60)%24,orb=$('skyOrb'),daylight=hr>=6&&hr<19;orb.textContent=daylight?'☀️':'🌙';let ph=daylight?(hr-6)/13:((hr>=19?hr-19:hr+5)/11);orb.style.left=(5+ph*90)+'%';orb.style.top=(29-Math.sin(Math.PI*ph)*24)+'px';wrap.style.filter=hr>=20||hr<6?'brightness(.62) saturate(.8)':(hr>=18?'brightness(.82)':'none')}
 function update(dt){if(started&&!inDialogue){let l=Math.hypot(move.x,move.y)||1;player.x+=move.x/l*145*dt;player.y+=move.y/l*145*dt;player.x=Math.max(560,Math.min(1240,player.x));player.y=Math.max(300,Math.min(980,player.y));if(Math.abs(move.x)+Math.abs(move.y)>.05)$('menu').classList.remove('open');player.minute+=dt*3.5;let dr=difficultyRules[player.difficulty].drain;player.hunger=Math.max(0,player.hunger-dt*.035*dr);player.energy=Math.max(0,player.energy-dt*.025*dr)}cam.x+=((player.x-W/2)-cam.x)*Math.min(1,dt*7);cam.y+=((player.y-H/2)-cam.y)*Math.min(1,dt*7);cam.x=Math.max(0,Math.min(1800-W,cam.x));cam.y=Math.max(0,Math.min(1300-H,cam.y));updateNPCs(dt);updateTarget();maybeFindWaterfall();timeDisplay()}
 function render(){
  background();
 
- cats.filter(c=>(c.zone||'home')===player.zone)
-     .forEach(c=>animal({...c,species:c.species||player.species}));
+ cats.filter(c=>{
+   if((c.zone||'home')!==player.zone)return false;
+   if(c.id==='secretFriend'&&!secretFriendAvailable())return false;
+   return true;
+ }).forEach(c=>animal({...c,species:c.species||player.species}));
 
  animal({
    x:player.x,y:player.y,name:player.name,
