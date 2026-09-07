@@ -465,6 +465,51 @@ function updateTarget(){
  if(!active){$('menu').classList.remove('open');$('menu').innerHTML=''}
 }
 
+const difficultyRules={easy:{training:2,drain:.8},medium:{training:4,drain:1},hard:{training:6,drain:1.25}};
+let secretFriendNPC=null;
+function trainingGoal(){return difficultyRules[player.difficulty].training}
+function milestoneCount(){let m=player.milestones;return [m.mother,m.play,m.sleep,m.waterfall,m.friend,m.training>=trainingGoal(),m.hunt].filter(Boolean).length}
+function updateProgress(){if($('progressFill'))$('progressFill').style.width=Math.round(milestoneCount()/7*100)+'%'}
+function setObjective(t){if($('objectiveText'))$('objectiveText').textContent=t;updateProgress()}
+function drawPortrait(canvas,c){if(!canvas||!c)return;let q=canvas.getContext('2d');q.clearRect(0,0,80,80);let sp=c.species||player.species,col=c.color||player.fur,eye=c.eye||player.eye;q.fillStyle=col;if(sp==='wolf'){q.beginPath();q.arc(34,40,21,0,7);q.fill();q.beginPath();q.ellipse(55,47,17,10,0,0,7);q.fill();q.beginPath();q.moveTo(20,27);q.lineTo(25,7);q.lineTo(34,25);q.fill();q.beginPath();q.moveTo(41,25);q.lineTo(50,7);q.lineTo(55,28);q.fill();q.fillStyle=eye;q.beginPath();q.arc(30,40,3,0,7);q.arc(41,40,3,0,7);q.fill();q.fillStyle='#222';q.beginPath();q.arc(69,47,3,0,7);q.fill()}else{q.beginPath();q.arc(40,40,23,0,7);q.fill();q.beginPath();q.moveTo(20,29);q.lineTo(25,7);q.lineTo(36,25);q.fill();q.beginPath();q.moveTo(44,25);q.lineTo(56,7);q.lineTo(60,30);q.fill();q.fillStyle=eye;q.beginPath();q.arc(33,40,3,0,7);q.arc(47,40,3,0,7);q.fill()}}
+function charByName(n){return cats.find(c=>c.name===n)||secretFriendNPC||{species:player.species,color:player.fur,eye:player.eye}}
+function dialogue(name,lines,done){queue=[...lines];afterDialogue=done||null;inDialogue=true;$('speaker').textContent=name;drawPortrait($('dialoguePortrait'),charByName(name));$('dialogue').classList.add('show');nextLine()}
+function nextLine(){if(queue.length){$('dialogueText').textContent=queue.shift();$('dialogueBtn').textContent=queue.length?'Continue':'Close'}else{$('dialogue').classList.remove('show');inDialogue=false;let f=afterDialogue;afterDialogue=null;if(f)f()}}
+$('dialogueBtn').onclick=nextLine;
+
+function memory(text){if(!player.memories.includes(text))player.memories.push(text)}
+function addChoice(icon,label,small,fn){let b=document.createElement('button');b.className='choice';b.innerHTML=`<span class="ico">${icon}</span><span>${label}<small>${small}</small></span>`;b.onclick=()=>{$('menu').classList.remove('open');fn()};$('menu').appendChild(b)}
+function talk(c){let r=rel[c.id];r.talks++;r.trust=Math.min(100,r.trust+2);player.skills.social++;if(c.id==='mother'){player.milestones.mother=true;updateProgress()}r.history.push(`💬 Talked on Day ${player.day}.`);if(c.id==='mother')dialogue(c.name,[`Good morning, ${player.name}. Stay close until your paws get a little bigger.`,`Your siblings are awake. Go play — and come back when you're hungry.`],()=>{$('objective').innerHTML=`<b>FIRST LIGHT</b>Play with ${cats.find(x=>x.id==='sister').name} or ${cats.find(x=>x.id==='brother').name}.`});else if(c.id==='leader')dialogue(c.name,['Mossheart studies you carefully.','“Small paws today. Fierce paws someday, perhaps.”']);else dialogue(c.name,[`${c.name} flicks their tail and greets you.`])}
+function playPounce(c){player.skills.pounce++;player.milestones.play=true;player.milestones.training++;updateProgress();player.energy=Math.max(0,player.energy-5);rel[c.id].bond=Math.min(100,rel[c.id].bond+3);rel[c.id].history.push(`🐾 Practiced pouncing together on Day ${player.day}.`);dialogue('Play Pounce',[`You crouch... wiggle... POUNCE! ${c.name} tumbles into the moss.`,`Pouncing +1`])}
+function playFight(c){player.skills.fight++;player.milestones.play=true;player.milestones.training++;updateProgress();player.energy=Math.max(0,player.energy-7);rel[c.id].fights++;rel[c.id].bond=Math.min(100,rel[c.id].bond+2);rel[c.id].history.push(`⚔️ Play-fought on Day ${player.day}.`);dialogue('Play Fight',[`You and ${c.name} wrestle until one of you rolls into the grass.`,`Fighting +1`])}
+function stalk(c){player.skills.stealth++;player.milestones.play=true;player.milestones.training++;updateProgress();player.energy=Math.max(0,player.energy-4);rel[c.id].history.push(`👀 Practiced stalking on Day ${player.day}.`);dialogue('Stalk',[`You flatten yourself into the grass and creep toward ${c.name}.`,`Stealth +1`])}
+function eat(){player.hunger=Math.min(100,player.hunger+35);dialogue('Eat',[`${cats.find(c=>c.id==='mother').name} nudges a little food toward you. Your belly feels full.`])}
+function sleep(){
+ player.energy=100;
+ player.hunger=Math.max(30,player.hunger-15);
+ player.day++;
+ player.minute=420;
+ player.milestones.sleep=true;updateProgress();
+ memory(`🌙 Slept through the night after Day ${player.day-1}.`);
+ dialogue('Sleep',[
+   `You curl into the warm moss beside your family.`,
+   `The forest fades away... and morning comes.`
+ ],()=>{
+   if(player.day===2 && !player.waterfallFound){
+     player.waterfallHintSeen=true;
+     memory('💦 Heard distant rushing water beyond the familiar paths.');
+     setObjective('Find the southwest trail. Where is that sound of rushing water coming from?');
+     dialogue('Morning',[
+       `Something sounds different today.`,
+       `Beyond the familiar paths, beyond the southwest trail, you can hear the faint rush of water.`,
+       `Maybe the world is bigger than you thought.`
+     ]);
+   }else{
+     setObjective('Explore, play, and get to know your home.');
+   }
+ })
+}
+
 function openProfile(c){let r=rel[c.id];$('profileName').textContent=c.name;drawPortrait($('profilePortrait'),c);$('profileRole').textContent=`${c.role}${c.currentActivity?' • Now: '+c.currentActivity:''}`;$('profileTrust').textContent=r.trust;$('profileTalks').textContent=r.talks;$('profileFights').textContent=r.fights;$('profileBond').textContent=r.bond;$('profileHistory').innerHTML=r.history.slice(-6).map(x=>`<div class="memory">${x}</div>`).join('');$('profileOverlay').classList.add('show')}
 
 function travelTo(zone){
