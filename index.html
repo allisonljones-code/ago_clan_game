@@ -170,41 +170,19 @@ canvas{display:block;width:100%;height:100%}
 </div></div>
 </div>
 
-<script>
+<script type="module">
+import {createPlayerState,createRelationships,getNPCDefinitions,V8_DIFFICULTY_RULES} from './src/content/v8Content.js';
+import {createV8Renderer} from './src/rendering/v8Renderer.js';
 (()=>{
 const $=id=>document.getElementById(id),canvas=$('game'),ctx=canvas.getContext('2d'),wrap=$('wrap');
 let W,H,D=Math.min(devicePixelRatio||1,2);function resize(){W=wrap.clientWidth;H=wrap.clientHeight;canvas.width=W*D;canvas.height=H*D;ctx.setTransform(D,0,0,D,0,0)}addEventListener('resize',resize);resize();
 
-const player={x:900,y:680,name:'Raya',species:'wildcat',fur:'#c9784e',eye:'#6fa7d2',mark:'stripe',personality:'Curious',homeGroup:'Moonfall Colony',hunger:90,energy:90,health:100,skills:{pounce:0,stealth:0,fight:0,social:0},memories:['🌅 Born into the wild'],day:1,minute:420,waterfallFound:false,friendMet:false,waterfallHintSeen:false,difficulty:'easy',milestones:{mother:false,play:false,sleep:false,waterfall:false,friend:false,training:0,hunt:false},zone:'home'};
+const player=createPlayerState();
 let cam={x:0,y:0},move={x:0,y:0},active=null,last=performance.now(),started=false,inDialogue=false,queue=[],afterDialogue=null;
-const rel={
- mother:{trust:100,talks:0,fights:0,bond:100,history:['❤️ Nightpelt is your mother.']},
- sister:{trust:75,talks:0,fights:0,bond:80,history:['🐾 Bramblepaw is your sister.']},
- brother:{trust:75,talks:0,fights:0,bond:80,history:['🐾 Jonnipur is your brother.']},
- leader:{trust:10,talks:0,fights:0,bond:5,history:['👑 You have seen Mossheart around home.']},
- warrior:{trust:5,talks:0,fights:0,bond:5,history:['⚔️ Ashstep is one of the hunters.']},
- healer:{trust:10,talks:0,fights:0,bond:10,history:['🌿 Clovermist is the healer.']},
- secretFriend:{trust:50,talks:0,fights:0,bond:50,history:['💧 You have not met anyone at the waterfall yet.']}
-};
+const rel=createRelationships();
 let cats=[];
-const wildcatNPCs=[
- {id:'mother',name:'Nightpelt',role:'Mother • loving and kind',x:840,y:610,color:'#34383b',eye:'#83b97c',mark:'chest'},
- {id:'sister',name:'Bramble',role:'Sister • bold and competitive',x:950,y:630,color:'#9a6d4e',eye:'#d1ac56',mark:'stripe'},
- {id:'brother',name:'Jonnipur',role:'Brother • curious and playful',x:930,y:735,color:'#c4a078',eye:'#75a9cc',mark:'patch'},
- {id:'leader',name:'Mossheart',role:'Colony Elder • strict but kind',x:900,y:365,color:'#a76d4b',eye:'#8ec272',mark:'stripe'},
- {id:'warrior',name:'Ashstep',role:'Hunter • quick and watchful',x:1160,y:650,color:'#5b6268',eye:'#d1ac56',mark:'chest'},
- {id:'healer',name:'Clovermist',role:'Healer • keeper of herbs and stories',x:620,y:570,color:'#d7cfbe',eye:'#75a9cc',mark:'patch'}
-];
-const wolfNPCs=[
- {id:'mother',name:'Nightwind',role:'Mother • loving and steady',x:840,y:610,color:'#4c5053',eye:'#8eb585',mark:'chest'},
- {id:'sister',name:'Briar',role:'Sister • bold and competitive',x:950,y:630,color:'#755f4e',eye:'#d0a85a',mark:'stripe'},
- {id:'brother',name:'Juniper',role:'Brother • curious and playful',x:930,y:735,color:'#9b8b78',eye:'#78a5c3',mark:'patch'},
- {id:'leader',name:'Stonecrest',role:'Pack Elder • strict but kind',x:900,y:365,color:'#69645d',eye:'#90b675',mark:'stripe'},
- {id:'warrior',name:'Flint',role:'Hunter • strong and alert',x:1160,y:650,color:'#555b5f',eye:'#d1ac56',mark:'chest'},
- {id:'healer',name:'Sage',role:'Healer • keeper of herbs and stories',x:620,y:570,color:'#b7b0a4',eye:'#75a9cc',mark:'patch'}
-];
 function setNPCSpecies(){
- cats=(player.species==='wolf'?wolfNPCs:wildcatNPCs).map(c=>({...c,species:player.species,homeX:c.x,homeY:c.y,targetX:c.x,targetY:c.y,moveTimer:1+Math.random()*5,zone:'home'}));
+ cats=getNPCDefinitions(player.species).map(c=>({...c,species:player.species,homeX:c.x,homeY:c.y,targetX:c.x,targetY:c.y,moveTimer:1+Math.random()*5,zone:'home'}));
  // Keep relationship history species-aware
  rel.mother.history=[`❤️ ${cats.find(c=>c.id==='mother').name} is your mother.`];
  rel.sister.history=[`🐾 ${cats.find(c=>c.id==='sister').name} is your sister.`];
@@ -215,204 +193,15 @@ function setNPCSpecies(){
 }
 setNPCSpecies();
 
+const renderer=createV8Renderer({
+ getViewport:()=>({W,H}),
+ getCamera:()=>cam,
+ getZone:()=>player.zone,
+ getPlayer:()=>player,
+ getVisibleNpcs:()=>cats.filter(c=>(c.zone||'home')===player.zone&&!(c.id==='secretFriend'&&!secretFriendAvailable())),
+ getClock:()=>({hour:(player.minute/60)%24})
+});
 
-function sx(x){return x-cam.x}function sy(y){return y-cam.y}
-function tree(x,y,s=1){let X=sx(x),Y=sy(y);ctx.fillStyle='#604834';ctx.fillRect(X-7*s,Y+8*s,14*s,34*s);ctx.fillStyle='#315b40';ctx.beginPath();ctx.arc(X,Y,30*s,0,7);ctx.fill();ctx.fillStyle='#437251';ctx.beginPath();ctx.arc(X-17*s,Y+4*s,20*s,0,7);ctx.fill();ctx.beginPath();ctx.arc(X+17*s,Y+4*s,20*s,0,7);ctx.fill()}
-function den(x,y,w,h,label){let X=sx(x),Y=sy(y);ctx.fillStyle='#5c4d3c';ctx.beginPath();ctx.ellipse(X,Y,w/2,h/2,0,0,7);ctx.fill();ctx.fillStyle='#27352d';ctx.beginPath();ctx.ellipse(X,Y+10,w*.19,h*.25,0,0,7);ctx.fill();ctx.fillStyle='#fffddd';ctx.font='bold 11px -apple-system';ctx.textAlign='center';ctx.fillText(label,X,Y-h*.62)}
-function animal(c,isPlayer=false){
- let X=sx(c.x),Y=sy(c.y);
- ctx.save();ctx.translate(X,Y);
-
- const species=c.species||player.species;
- const bodyColor=c.color||player.fur;
- const eyeColor=c.eye||player.eye;
- const scale=isPlayer?.78:1;
-
- ctx.fillStyle='#0003';
- ctx.beginPath();
- ctx.ellipse(0,18,species==='wolf'?(isPlayer?22:30):(isPlayer?18:23),7,0,0,7);
- ctx.fill();
-
- ctx.scale(scale,scale);
-
- if(species==='wolf'){
-   // WOLF: long horizontal body, four legs, longer muzzle, large ears, bushy tail.
-   ctx.fillStyle=bodyColor;
-
-   // torso
-   ctx.beginPath();
-   ctx.ellipse(0,2,31,19,0,0,Math.PI*2);
-   ctx.fill();
-
-   // chest / neck
-   ctx.beginPath();
-   ctx.ellipse(-19,-9,15,20,-.2,0,Math.PI*2);
-   ctx.fill();
-
-   // head
-   ctx.beginPath();
-   ctx.arc(-23,-28,17,0,Math.PI*2);
-   ctx.fill();
-
-   // muzzle
-   ctx.beginPath();
-   ctx.ellipse(-34,-23,14,8,-.05,0,Math.PI*2);
-   ctx.fill();
-
-   // ears
-   ctx.beginPath();
-   ctx.moveTo(-35,-39);ctx.lineTo(-31,-57);ctx.lineTo(-22,-40);ctx.fill();
-   ctx.beginPath();
-   ctx.moveTo(-18,-41);ctx.lineTo(-11,-56);ctx.lineTo(-8,-37);ctx.fill();
-
-   // legs
-   const legs=[[-18,13],[-5,14],[13,13],[24,11]];
-   legs.forEach(([lx,ly])=>{
-     ctx.fillRect(lx,ly,7,22);
-     ctx.beginPath();ctx.ellipse(lx+3.5,35,6,3,0,0,Math.PI*2);ctx.fill();
-   });
-
-   // tail: thicker, bushier, held outward
-   ctx.strokeStyle=bodyColor;
-   ctx.lineWidth=13;
-   ctx.lineCap='round';
-   ctx.beginPath();
-   ctx.moveTo(28,0);
-   ctx.quadraticCurveTo(48,-7,53,10);
-   ctx.stroke();
-
-   // chest marking
-   let mark=c.mark||player.mark;
-   if(mark==='chest'){
-     ctx.fillStyle='#f3e9d7';
-     ctx.beginPath();ctx.ellipse(-20,-6,8,13,-.2,0,Math.PI*2);ctx.fill();
-   }
-   if(mark==='patch'){
-     ctx.fillStyle='#f3e9d7';
-     ctx.beginPath();ctx.ellipse(-29,-29,7,8,.25,0,Math.PI*2);ctx.fill();
-   }
-   if(mark==='stripe'){
-     ctx.strokeStyle='#473a31';ctx.lineWidth=3;
-     [-30,-24,-18].forEach(x=>{
-       ctx.beginPath();ctx.moveTo(x,-42);ctx.lineTo(x-2,-35);ctx.stroke();
-     });
-   }
-
-   // eyes
-   ctx.fillStyle=eyeColor;
-   ctx.beginPath();ctx.arc(-29,-29,3,0,Math.PI*2);ctx.arc(-19,-29,3,0,Math.PI*2);ctx.fill();
-   ctx.fillStyle='#111';
-   ctx.beginPath();ctx.arc(-29,-29,1.2,0,Math.PI*2);ctx.arc(-19,-29,1.2,0,Math.PI*2);ctx.fill();
-
-   // nose
-   ctx.fillStyle='#222';
-   ctx.beginPath();ctx.arc(-46,-23,3,0,Math.PI*2);ctx.fill();
-
-   // name
-   ctx.fillStyle='#fff';
-   ctx.font='bold 12px -apple-system';
-   ctx.textAlign='center';
-   ctx.fillText(c.name||player.name,-10,-65);
-
- }else{
-   // WILDCAT: upright compact body, rounder head, cat tail.
-   ctx.fillStyle=bodyColor;
-   ctx.beginPath();ctx.ellipse(0,2,20,27,0,0,Math.PI*2);ctx.fill();
-   ctx.beginPath();ctx.arc(0,-20,18,0,Math.PI*2);ctx.fill();
-
-   ctx.beginPath();ctx.moveTo(-13,-31);ctx.lineTo(-6,-45);ctx.lineTo(-1,-31);ctx.fill();
-   ctx.beginPath();ctx.moveTo(13,-31);ctx.lineTo(6,-45);ctx.lineTo(1,-31);ctx.fill();
-
-   ctx.strokeStyle=bodyColor;ctx.lineWidth=7;ctx.lineCap='round';
-   ctx.beginPath();ctx.moveTo(16,7);ctx.quadraticCurveTo(37,-7,30,-27);ctx.stroke();
-
-   let mark=c.mark||player.mark;
-   if(mark==='stripe'){
-     ctx.strokeStyle='#473a31';ctx.lineWidth=3;
-     [-6,0,6].forEach(x=>{ctx.beginPath();ctx.moveTo(x,-36);ctx.lineTo(x-2,-29);ctx.stroke()})
-   }
-   if(mark==='patch'){
-     ctx.fillStyle='#f3e9d7';ctx.beginPath();ctx.ellipse(7,-25,7,9,.3,0,Math.PI*2);ctx.fill()
-   }
-   if(mark==='chest'){
-     ctx.fillStyle='#f3e9d7';ctx.beginPath();ctx.ellipse(0,4,8,14,0,0,Math.PI*2);ctx.fill()
-   }
-
-   ctx.fillStyle=eyeColor;
-   ctx.beginPath();ctx.arc(-6,-21,3,0,Math.PI*2);ctx.arc(6,-21,3,0,Math.PI*2);ctx.fill();
-   ctx.fillStyle='#111';
-   ctx.beginPath();ctx.arc(-6,-21,1.2,0,Math.PI*2);ctx.arc(6,-21,1.2,0,Math.PI*2);ctx.fill();
-   ctx.fillStyle='#b66d6d';
-   ctx.beginPath();ctx.arc(0,-15,2,0,Math.PI*2);ctx.fill();
-
-   ctx.fillStyle='#fff';
-   ctx.font='bold 12px -apple-system';
-   ctx.textAlign='center';
-   ctx.fillText(c.name||player.name,0,-52);
- }
-
- ctx.restore();
-}
-function homeBackground(){
- ctx.fillStyle='#4d7255';ctx.fillRect(0,0,W,H);
- ctx.fillStyle='#789a6c';ctx.beginPath();ctx.arc(sx(900),sy(650),480,0,7);ctx.fill();
-
- ctx.strokeStyle='#b8a27d';ctx.lineWidth=100;ctx.lineCap='round';
- ctx.beginPath();ctx.moveTo(sx(900),sy(650));ctx.lineTo(sx(900),sy(1100));ctx.stroke();
-
- den(850,760,230,145,player.species==='wolf'?'Pup Den':'Nursery');
- den(900,275,170,100,player.species==='wolf'?'Pack Elder den':'Colony Elder den');
- den(540,520,150,90,player.species==='wolf'?'Herb Hollow':'Healer den');
- den(1210,620,160,95,'Hunters');
-
- for(let i=0;i<34;i++){
-   let a=i*.75,r=460+(i%5)*40;
-   tree(900+Math.cos(a)*r,650+Math.sin(a)*r*.75,.85+(i%3)*.12)
- }
-}
-
-function waterfallBackground(){
- ctx.fillStyle='#284b3a';ctx.fillRect(0,0,W,H);
- ctx.fillStyle='#6f9168';ctx.beginPath();ctx.ellipse(sx(900),sy(620),430,370,0,0,7);ctx.fill();
-
- // waterfall + pool
- ctx.fillStyle='#a9d8e8';ctx.fillRect(sx(865),sy(280),70,220);
- ctx.fillStyle='#e7f7fb';ctx.fillRect(sx(878),sy(285),10,210);ctx.fillRect(sx(910),sy(285),8,210);
- ctx.fillStyle='#78a9bd';ctx.beginPath();ctx.ellipse(sx(900),sy(560),175,90,0,0,7);ctx.fill();
-
- // rocks
- ctx.fillStyle='#68645d';
- [[755,540,40],[1045,550,48],[795,655,30],[1010,670,34]].forEach(([x,y,r])=>{
-   ctx.beginPath();ctx.arc(sx(x),sy(y),r,0,7);ctx.fill()
- });
-
- // surrounding trees
- for(let i=0;i<22;i++){
-   let a=i*.9,r=340+(i%4)*38;
-   tree(900+Math.cos(a)*r,610+Math.sin(a)*r*.72,.82+(i%3)*.1)
- }
-
- // trail back
- ctx.strokeStyle='#b8a27d';ctx.lineWidth=78;ctx.lineCap='round';
- ctx.beginPath();ctx.moveTo(sx(900),sy(760));ctx.lineTo(sx(900),sy(1080));ctx.stroke();
-
- ctx.font='bold 14px -apple-system';ctx.textAlign='center';
- ctx.fillStyle='#fffddd';ctx.fillRect(sx(900)-52,sy(245)-15,104,22);
- ctx.fillStyle='#26342b';ctx.fillText('Waterfall',sx(900),sy(245)+1);
-
- // explicit trail-home sign
- const exitText=`← Trail Home`;
- let ex=sx(900),ey=sy(930);
- ctx.font='bold 13px -apple-system';ctx.textAlign='center';
- let ew=ctx.measureText(exitText).width+18;
- ctx.fillStyle='#fffddd';ctx.fillRect(ex-ew/2,ey-16,ew,23);
- ctx.fillStyle='#26342b';ctx.fillText(exitText,ex,ey+1);
-}
-
-function background(){
- if(player.zone==='waterfall')waterfallBackground();
- else homeBackground();
-}
 
 function distance(a,b){return Math.hypot(a.x-b.x,a.y-b.y)}
 const waterfall={x:640,y:390};
@@ -491,7 +280,7 @@ function updateTarget(){
  if(!active){$('menu').classList.remove('open');$('menu').innerHTML=''}
 }
 
-const difficultyRules={easy:{training:2,drain:.8},medium:{training:4,drain:1},hard:{training:6,drain:1.25}};
+const difficultyRules=V8_DIFFICULTY_RULES;
 let secretFriendNPC=null;
 function trainingGoal(){return difficultyRules[player.difficulty].training}
 function milestoneCount(){let m=player.milestones;return [m.mother,m.play,m.sleep,m.waterfall,m.friend,m.training>=trainingGoal(),m.hunt].filter(Boolean).length}
@@ -778,52 +567,11 @@ function updateNPCs(dt){
 
 function timeDisplay(){let h=Math.floor(player.minute/60)%24,m=Math.floor(player.minute%60),amp=h>=12?'PM':'AM',hh=h%12||12,icon=h<8?'🌅':h<18?'☀️':h<21?'🌇':'🌙';$('timeText').textContent=`${icon} ${hh}:${String(m).padStart(2,'0')} ${amp}`;$('ageText').textContent=`Young ${player.species==='wolf'?'Pup':'Kit'} • Day ${player.day}`;$('hunger').textContent=Math.round(player.hunger);$('energy').textContent=Math.round(player.energy);$('health').textContent=Math.round(player.health);let hr=(player.minute/60)%24,orb=$('skyOrb'),daylight=hr>=6&&hr<19;orb.textContent=daylight?'☀️':'🌙';let ph=daylight?(hr-6)/13:((hr>=19?hr-19:hr+5)/11);orb.style.left=(5+ph*90)+'%';orb.style.top=(29-Math.sin(Math.PI*ph)*24)+'px';wrap.style.filter=hr>=20||hr<6?'brightness(.62) saturate(.8)':(hr>=18?'brightness(.82)':'none')}
 function update(dt){if(started&&!inDialogue){let l=Math.hypot(move.x,move.y)||1;player.x+=move.x/l*145*dt;player.y+=move.y/l*145*dt;player.x=Math.max(560,Math.min(1240,player.x));player.y=Math.max(300,Math.min(980,player.y));if(Math.abs(move.x)+Math.abs(move.y)>.05)$('menu').classList.remove('open');player.minute+=dt*3.5;let dr=difficultyRules[player.difficulty].drain;player.hunger=Math.max(0,player.hunger-dt*.035*dr);player.energy=Math.max(0,player.energy-dt*.025*dr)}cam.x+=((player.x-W/2)-cam.x)*Math.min(1,dt*7);cam.y+=((player.y-H/2)-cam.y)*Math.min(1,dt*7);cam.x=Math.max(0,Math.min(1800-W,cam.x));cam.y=Math.max(0,Math.min(1300-H,cam.y));updateNPCs(dt);updateTarget();maybeFindWaterfall();timeDisplay()}
-function render(){
- background();
-
- cats.filter(c=>{
-   if((c.zone||'home')!==player.zone)return false;
-   if(c.id==='secretFriend'&&!secretFriendAvailable())return false;
-   return true;
- }).forEach(c=>animal({...c,species:c.species||player.species}));
-
- animal({
-   x:player.x,y:player.y,name:player.name,
-   color:player.fur,eye:player.eye,mark:player.mark,species:player.species
- },true);
-
- if(player.zone==='home'){
-   const labels=[
-     [850,760,player.species==='wolf'?'Pup Den':'Nursery'],
-     [900,275,player.species==='wolf'?'Pack Elder':'Colony Elder'],
-     [540,520,player.species==='wolf'?'Herb Hollow':'Healer Den'],
-     [1210,620,'Hunters'],
-     [620,900,'Waterfall Trail →']
-   ];
-
-   labels.forEach(([x,y,t])=>{
-     let X=sx(x),Y=sy(y)-65;
-     ctx.font='bold 12px -apple-system';ctx.textAlign='center';
-     let ww=ctx.measureText(t).width+12;
-     ctx.fillStyle='#fffddd';ctx.fillRect(X-ww/2,Y-13,ww,19);
-     ctx.fillStyle='#26342b';ctx.fillText(t,X,Y+1);
-   });
-
-   let hr=(player.minute/60)%24;
-   if(hr>=21||hr<6){
-     cats.filter(c=>(c.zone||'home')==='home'&&c.id!=='warrior').forEach(c=>{
-       ctx.fillStyle='#fff';ctx.font='bold 16px -apple-system';ctx.textAlign='left';
-       ctx.fillText('z z z',sx(c.x)+15,sy(c.y)-45);
-     });
-   }
- }
-}
-
 function loop(t){
  let dt=Math.min((t-last)/1000,.035);
  last=t;
  update(dt);
- render();
+ renderer.draw();
  requestAnimationFrame(loop);
 }
 requestAnimationFrame(loop);
