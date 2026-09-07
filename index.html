@@ -174,6 +174,7 @@ import {createPlayerState,createRelationships,getNPCDefinitions,V8_DIFFICULTY_RU
 import {createV8Renderer} from './src/rendering/v8Renderer.js';
 import {createInputMovement} from './src/systems/inputMovement.js';
 import {createTimeNeeds} from './src/systems/timeNeeds.js';
+import {createSchedules} from './src/systems/schedules.js';
 (()=>{
 const $=id=>document.getElementById(id),canvas=$('game'),ctx=canvas.getContext('2d'),wrap=$('wrap');
 let W,H,D=Math.min(devicePixelRatio||1,2);function resize(){W=wrap.clientWidth;H=wrap.clientHeight;canvas.width=W*D;canvas.height=H*D;ctx.setTransform(D,0,0,D,0,0)}addEventListener('resize',resize);resize();
@@ -200,7 +201,7 @@ const renderer=createV8Renderer({
  getCamera:()=>cam,
  getZone:()=>player.zone,
  getPlayer:()=>player,
- getVisibleNpcs:()=>cats.filter(c=>(c.zone||'home')===player.zone&&!(c.id==='secretFriend'&&!secretFriendAvailable())),
+ getVisibleNpcs:()=>cats.filter(c=>(c.zone||'home')===player.zone&&!(c.id==='secretFriend'&&!schedules.isSecretFriendAvailable())),
  getClock:()=>({hour:(player.minute/60)%24})
 });
 
@@ -208,13 +209,6 @@ const renderer=createV8Renderer({
 function distance(a,b){return Math.hypot(a.x-b.x,a.y-b.y)}
 const waterfall={x:640,y:390};
 function maybeFindWaterfall(){}
-
-function secretFriendAvailable(){
- if(!player.friendMet)return true;
- const hr=(player.minute/60)%24;
- // Story scenes can later override this in one place.
- return hr>=10 && hr<17;
-}
 
 function meetSecretFriend(){
  if(player.friendMet)return;
@@ -260,7 +254,7 @@ function updateTarget(){
  // characters only exist in their own zone
  cats.forEach(c=>{
    if((c.zone||'home')!==player.zone)return;
-   if(c.id==='secretFriend'&&!secretFriendAvailable())return;
+  if(c.id==='secretFriend'&&!schedules.isSecretFriendAvailable())return;
    let d=distance(player,c);
    if(d<95&&d<best){best=d;active={type:'cat',cat:c}}
  });
@@ -349,7 +343,7 @@ function travelTo(zone){
        'The trail opens onto a hidden waterfall.',
        'Something moves beside the pool...'
      ],()=>meetSecretFriend());
-   } else if(player.friendMet && !secretFriendAvailable()){
+   } else if(player.friendMet && !schedules.isSecretFriendAvailable()){
      const friendName=player.species==='wolf'?'Luma':'Rowan';
      dialogue('Waterfall',[
        `${friendName} isn't here right now.`,
@@ -498,78 +492,11 @@ const movement=createInputMovement({
  isDialogueOpen:()=>inDialogue,
  closeMenu:()=>$('menu').classList.remove('open')
 });
+const schedules=createSchedules({getPlayer:()=>player,getCats:()=>cats,isStarted:()=>started,isDialogueOpen:()=>inDialogue});
 
-
-function npcScheduleBase(c){
- const hour=(player.minute/60)%24;
- const morning=hour<10, midday=hour>=10&&hour<17, evening=hour>=17;
- const wolf=player.species==='wolf';
-
- // Returning a "base" location gives each character a daily routine.
- if(c.id==='mother'){
-   if(morning)return {x:850,y:700,label:wolf?'Pup Den':'Nursery'};
-   if(midday)return {x:820,y:620,label:'Central clearing'};
-   return {x:850,y:735,label:wolf?'Pup Den':'Nursery'};
- }
- if(c.id==='sister'){
-   if(morning)return {x:930,y:700,label:'Family den'};
-   if(midday)return {x:1040,y:570,label:'Play clearing'};
-   return {x:900,y:725,label:'Family den'};
- }
- if(c.id==='brother'){
-   if(morning)return {x:900,y:720,label:'Family den'};
-   if(midday)return {x:1000,y:650,label:'Play clearing'};
-   return {x:935,y:745,label:'Family den'};
- }
- if(c.id==='leader'){
-   if(morning)return {x:900,y:390,label:'Elder den'};
-   if(midday)return {x:930,y:515,label:'Central clearing'};
-   return {x:900,y:365,label:'Elder den'};
- }
- if(c.id==='warrior'){
-   if(morning)return {x:1110,y:610,label:'Hunter area'};
-   if(midday)return {x:1175,y:470,label:'Outer paths'};
-   return {x:1080,y:650,label:'Hunter area'};
- }
- if(c.id==='healer'){
-   if(morning)return {x:600,y:555,label:'Herb hollow'};
-   if(midday)return {x:660,y:525,label:'Gathering herbs'};
-   return {x:620,y:575,label:'Herb hollow'};
- }
- return {x:c.homeX,y:c.homeY,label:'Home'};
-}
-
-function updateNPCs(dt){
- if(!started||inDialogue)return;
- cats.forEach(c=>{
-   if((c.zone||'home')!=='home')return;
-   const base=npcScheduleBase(c);
-   c.moveTimer-=dt;
-
-   if(c.moveTimer<=0){
-     c.moveTimer=2.5+Math.random()*5.5;
-
-     // A little wandering around the current scheduled activity area.
-     let radius=c.id==='mother'?55:(c.id==='sister'||c.id==='brother'?90:(c.id==='warrior'?115:65));
-     let a=Math.random()*Math.PI*2, r=Math.random()*radius;
-     c.targetX=base.x+Math.cos(a)*r;
-     c.targetY=base.y+Math.sin(a)*r*.65;
-     c.targetX=Math.max(590,Math.min(1210,c.targetX));
-     c.targetY=Math.max(320,Math.min(930,c.targetY));
-     c.currentActivity=base.label;
-   }
-
-   let dx=c.targetX-c.x,dy=c.targetY-c.y,d=Math.hypot(dx,dy);
-   if(d>3){
-     let speed=(c.id==='sister'||c.id==='brother')?34:(c.id==='warrior'?28:23);
-     c.x+=dx/d*speed*dt;
-     c.y+=dy/d*speed*dt;
-   }
- });
-}
 
 function timeDisplay(){let h=Math.floor(player.minute/60)%24,m=Math.floor(player.minute%60),amp=h>=12?'PM':'AM',hh=h%12||12,icon=h<8?'🌅':h<18?'☀️':h<21?'🌇':'🌙';$('timeText').textContent=`${icon} ${hh}:${String(m).padStart(2,'0')} ${amp}`;$('ageText').textContent=`Young ${player.species==='wolf'?'Pup':'Kit'} • Day ${player.day}`;$('hunger').textContent=Math.round(player.hunger);$('energy').textContent=Math.round(player.energy);$('health').textContent=Math.round(player.health);let hr=(player.minute/60)%24,orb=$('skyOrb'),daylight=hr>=6&&hr<19;orb.textContent=daylight?'☀️':'🌙';let ph=daylight?(hr-6)/13:((hr>=19?hr-19:hr+5)/11);orb.style.left=(5+ph*90)+'%';orb.style.top=(29-Math.sin(Math.PI*ph)*24)+'px';wrap.style.filter=hr>=20||hr<6?'brightness(.62) saturate(.8)':(hr>=18?'brightness(.82)':'none')}
-function update(dt){movement.update(dt);timeNeeds.update(dt);cam.x+=((player.x-W/2)-cam.x)*Math.min(1,dt*7);cam.y+=((player.y-H/2)-cam.y)*Math.min(1,dt*7);cam.x=Math.max(0,Math.min(1800-W,cam.x));cam.y=Math.max(0,Math.min(1300-H,cam.y));updateNPCs(dt);updateTarget();maybeFindWaterfall();timeDisplay()}
+function update(dt){movement.update(dt);timeNeeds.update(dt);cam.x+=((player.x-W/2)-cam.x)*Math.min(1,dt*7);cam.y+=((player.y-H/2)-cam.y)*Math.min(1,dt*7);cam.x=Math.max(0,Math.min(1800-W,cam.x));cam.y=Math.max(0,Math.min(1300-H,cam.y));schedules.update(dt);updateTarget();maybeFindWaterfall();timeDisplay()}
 function loop(t){
  let dt=Math.min((t-last)/1000,.035);
  last=t;
