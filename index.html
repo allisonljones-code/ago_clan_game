@@ -173,12 +173,13 @@ canvas{display:block;width:100%;height:100%}
 <script type="module">
 import {createPlayerState,createRelationships,getNPCDefinitions,V8_DIFFICULTY_RULES} from './src/content/v8Content.js';
 import {createV8Renderer} from './src/rendering/v8Renderer.js';
+import {createInputMovement} from './src/systems/inputMovement.js';
 (()=>{
 const $=id=>document.getElementById(id),canvas=$('game'),ctx=canvas.getContext('2d'),wrap=$('wrap');
 let W,H,D=Math.min(devicePixelRatio||1,2);function resize(){W=wrap.clientWidth;H=wrap.clientHeight;canvas.width=W*D;canvas.height=H*D;ctx.setTransform(D,0,0,D,0,0)}addEventListener('resize',resize);resize();
 
 const player=createPlayerState();
-let cam={x:0,y:0},move={x:0,y:0},active=null,last=performance.now(),started=false,inDialogue=false,queue=[],afterDialogue=null;
+let cam={x:0,y:0},active=null,last=performance.now(),started=false,inDialogue=false,queue=[],afterDialogue=null;
 const rel=createRelationships();
 let cats=[];
 function setNPCSpecies(){
@@ -194,6 +195,7 @@ function setNPCSpecies(){
 setNPCSpecies();
 
 const renderer=createV8Renderer({
+ ctx,
  getViewport:()=>({W,H}),
  getCamera:()=>cam,
  getZone:()=>player.zone,
@@ -490,11 +492,14 @@ $('startBtn').onclick=()=>{
 syncSpeciesUI();
 setTimeout(syncSpeciesUI,50);
 
-const joy=$('joystick'),stick=$('stick');let joyId=null,center={x:0,y:0};
-function jstart(e){let t=e.changedTouches?e.changedTouches[0]:e;joyId=t.identifier??'m';let r=joy.getBoundingClientRect();center={x:r.left+r.width/2,y:r.top+r.height/2};jmove(e)}
-function jmove(e){if(joyId===null)return;let t=e.changedTouches?[...e.changedTouches].find(q=>q.identifier===joyId):e;if(!t)return;let dx=t.clientX-center.x,dy=t.clientY-center.y,m=Math.hypot(dx,dy),mx=34;if(m>mx){dx=dx/m*mx;dy=dy/m*mx}move={x:dx/mx,y:dy/mx};stick.style.transform=`translate(${dx}px,${dy}px)`;e.preventDefault()}
-function jend(){joyId=null;move={x:0,y:0};stick.style.transform='translate(0,0)'}
-joy.addEventListener('touchstart',jstart,{passive:false});joy.addEventListener('touchmove',jmove,{passive:false});joy.addEventListener('touchend',jend,{passive:false});joy.addEventListener('mousedown',jstart);addEventListener('mousemove',e=>{if(joyId==='m')jmove(e)});addEventListener('mouseup',jend);
+const movement=createInputMovement({
+ joystick:$('joystick'),
+ stick:$('stick'),
+ getPlayer:()=>player,
+ isStarted:()=>started,
+ isDialogueOpen:()=>inDialogue,
+ closeMenu:()=>$('menu').classList.remove('open')
+});
 
 
 function npcScheduleBase(c){
@@ -566,7 +571,7 @@ function updateNPCs(dt){
 }
 
 function timeDisplay(){let h=Math.floor(player.minute/60)%24,m=Math.floor(player.minute%60),amp=h>=12?'PM':'AM',hh=h%12||12,icon=h<8?'🌅':h<18?'☀️':h<21?'🌇':'🌙';$('timeText').textContent=`${icon} ${hh}:${String(m).padStart(2,'0')} ${amp}`;$('ageText').textContent=`Young ${player.species==='wolf'?'Pup':'Kit'} • Day ${player.day}`;$('hunger').textContent=Math.round(player.hunger);$('energy').textContent=Math.round(player.energy);$('health').textContent=Math.round(player.health);let hr=(player.minute/60)%24,orb=$('skyOrb'),daylight=hr>=6&&hr<19;orb.textContent=daylight?'☀️':'🌙';let ph=daylight?(hr-6)/13:((hr>=19?hr-19:hr+5)/11);orb.style.left=(5+ph*90)+'%';orb.style.top=(29-Math.sin(Math.PI*ph)*24)+'px';wrap.style.filter=hr>=20||hr<6?'brightness(.62) saturate(.8)':(hr>=18?'brightness(.82)':'none')}
-function update(dt){if(started&&!inDialogue){let l=Math.hypot(move.x,move.y)||1;player.x+=move.x/l*145*dt;player.y+=move.y/l*145*dt;player.x=Math.max(560,Math.min(1240,player.x));player.y=Math.max(300,Math.min(980,player.y));if(Math.abs(move.x)+Math.abs(move.y)>.05)$('menu').classList.remove('open');player.minute+=dt*3.5;let dr=difficultyRules[player.difficulty].drain;player.hunger=Math.max(0,player.hunger-dt*.035*dr);player.energy=Math.max(0,player.energy-dt*.025*dr)}cam.x+=((player.x-W/2)-cam.x)*Math.min(1,dt*7);cam.y+=((player.y-H/2)-cam.y)*Math.min(1,dt*7);cam.x=Math.max(0,Math.min(1800-W,cam.x));cam.y=Math.max(0,Math.min(1300-H,cam.y));updateNPCs(dt);updateTarget();maybeFindWaterfall();timeDisplay()}
+function update(dt){movement.update(dt);if(started&&!inDialogue){player.minute+=dt*3.5;let dr=difficultyRules[player.difficulty].drain;player.hunger=Math.max(0,player.hunger-dt*.035*dr);player.energy=Math.max(0,player.energy-dt*.025*dr)}cam.x+=((player.x-W/2)-cam.x)*Math.min(1,dt*7);cam.y+=((player.y-H/2)-cam.y)*Math.min(1,dt*7);cam.x=Math.max(0,Math.min(1800-W,cam.x));cam.y=Math.max(0,Math.min(1300-H,cam.y));updateNPCs(dt);updateTarget();maybeFindWaterfall();timeDisplay()}
 function loop(t){
  let dt=Math.min((t-last)/1000,.035);
  last=t;
