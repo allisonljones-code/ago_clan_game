@@ -1,39 +1,46 @@
 export function createInputMovement({joystick,stick,getPlayer,isStarted,isDialogueOpen,closeMenu}){
   let move={x:0,y:0};
-  let joyId=null;
+  let activePointerId=null;
   let center={x:0,y:0};
 
-  function jstart(event){
-    let touch=event.changedTouches?event.changedTouches[0]:event;
-    joyId=touch.identifier??'m';
-    let bounds=joystick.getBoundingClientRect();
-    center={x:bounds.left+bounds.width/2,y:bounds.top+bounds.height/2};
-    jmove(event);
+  function resetPointer(){
+    const pointerId=activePointerId;
+    activePointerId=null;
+    move={x:0,y:0};
+    stick.style.transform='translate(0,0)';
+    if(pointerId!==null&&typeof joystick.releasePointerCapture==='function'){
+      try{joystick.releasePointerCapture(pointerId)}catch{}
+    }
   }
 
-  function jmove(event){
-    if(joyId===null)return;
-    let touch=event.changedTouches?[...event.changedTouches].find(item=>item.identifier===joyId):event;
-    if(!touch)return;
-    let dx=touch.clientX-center.x,dy=touch.clientY-center.y,magnitude=Math.hypot(dx,dy),maxDistance=34;
+  function movePointer(event){
+    if(activePointerId===null||event.pointerId!==activePointerId)return;
+    let dx=event.clientX-center.x,dy=event.clientY-center.y,magnitude=Math.hypot(dx,dy),maxDistance=34;
     if(magnitude>maxDistance){dx=dx/magnitude*maxDistance;dy=dy/magnitude*maxDistance}
     move={x:dx/maxDistance,y:dy/maxDistance};
     stick.style.transform=`translate(${dx}px,${dy}px)`;
     event.preventDefault();
   }
 
-  function jend(){
-    joyId=null;
-    move={x:0,y:0};
-    stick.style.transform='translate(0,0)';
+  function startPointer(event){
+    if(activePointerId!==null)return;
+    activePointerId=event.pointerId;
+    let bounds=joystick.getBoundingClientRect();
+    center={x:bounds.left+bounds.width/2,y:bounds.top+bounds.height/2};
+    if(typeof joystick.setPointerCapture==='function'){
+      try{joystick.setPointerCapture(event.pointerId)}catch{}
+    }
+    movePointer(event);
   }
 
-  joystick.addEventListener('touchstart',jstart,{passive:false});
-  joystick.addEventListener('touchmove',jmove,{passive:false});
-  joystick.addEventListener('touchend',jend,{passive:false});
-  joystick.addEventListener('mousedown',jstart);
-  addEventListener('mousemove',event=>{if(joyId==='m')jmove(event)});
-  addEventListener('mouseup',jend);
+  joystick.addEventListener('pointerdown',startPointer,{passive:false});
+  joystick.addEventListener('pointermove',movePointer,{passive:false});
+  joystick.addEventListener('pointerup',resetPointer,{passive:false});
+  joystick.addEventListener('pointercancel',resetPointer,{passive:false});
+  joystick.addEventListener('lostpointercapture',resetPointer,{passive:false});
+  addEventListener('pointermove',movePointer,{passive:false});
+  addEventListener('pointerup',resetPointer,{passive:false});
+  addEventListener('pointercancel',resetPointer,{passive:false});
 
   function update(deltaTime){
     if(!isStarted()||isDialogueOpen())return;
